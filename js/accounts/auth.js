@@ -1,5 +1,5 @@
 // js/accounts/auth.js
-import { auth, provider } from './config.js';
+import { auth, provider, ensureAuthReady } from './config.js';
 import {
     signInWithPopup,
     signInWithRedirect,
@@ -16,7 +16,8 @@ export class AuthManager {
         this.user = null;
         this.unsubscribe = null;
         this.authListeners = [];
-        this.init();
+        // Don't call init() yet - wait for Firebase to initialize
+        this.initPromise = ensureAuthReady().then(() => this.init());
     }
 
     init() {

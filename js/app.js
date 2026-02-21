@@ -2398,6 +2398,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         authManager.onAuthStateChanged(async (user) => {
+            // Update the dropdown whenever auth state changes
+            await updateAccountDropdown();
+            
             if (user) {
                 const data = await syncManager.getUserData();
                 if (data && data.profile && data.profile.avatar_url) {
