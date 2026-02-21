@@ -19,6 +19,8 @@ const DEFAULT_CONFIG = {
     appId: '1:895657412760:web:e81c5044c7f4e9b799e8ed',
 };
 
+const DEFAULT_POCKETBASE_URL = 'https://monodb.samidy.com';
+
 function getStoredConfig() {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
@@ -29,24 +31,65 @@ function getStoredConfig() {
     }
 }
 
-// Attempt to initialize on load
-// Priority: server-injected env (auth gate) > localStorage > default
-const storedConfig = getStoredConfig();
-const config = window.__FIREBASE_CONFIG__ || storedConfig || DEFAULT_CONFIG;
-
-if (config) {
+// Load config from config.json file
+async function loadConfigFromFile() {
     try {
-        app = initializeApp(config);
-        auth = getAuth(app);
-        database = getDatabase(app);
-        provider = new GoogleAuthProvider();
-        console.log('Firebase initialized from ' + (storedConfig ? 'saved' : 'default') + ' config');
+        const response = await fetch('./config.json');
+        if (!response.ok) {
+            console.debug('[Config] config.json not found, using defaults');
+            return null;
+        }
+        const data = await response.json();
+        return {
+            firebase: data.firebase || DEFAULT_CONFIG,
+            pocketbaseUrl: data.pocketbase?.url || DEFAULT_POCKETBASE_URL,
+        };
     } catch (error) {
-        console.error('Error initializing Firebase:', error);
+        console.debug('[Config] Failed to load config.json:', error.message);
+        return null;
     }
-} else {
-    console.log('No Firebase config found.');
 }
+
+// Initialize config on app load
+let fileConfig = null;
+let initPromise = loadConfigFromFile().then((result) => {
+    fileConfig = result;
+    return result;
+});
+
+// Attempt to initialize on load
+// Priority: server-injected env (auth gate) > file config > localStorage > default
+async function ensureConfigLoaded() {
+    if (!fileConfig) {
+        await initPromise;
+    }
+}
+
+// Get config in priority order
+function getConfig() {
+    const storedConfig = getStoredConfig();
+    const fileFirebaseConfig = fileConfig?.firebase;
+    const config = window.__FIREBASE_CONFIG__ || fileFirebaseConfig || storedConfig || DEFAULT_CONFIG;
+    return config;
+}
+
+// Initialize on load
+ensureConfigLoaded().then(() => {
+    const config = getConfig();
+    if (config) {
+        try {
+            app = initializeApp(config);
+            auth = getAuth(app);
+            database = getDatabase(app);
+            provider = new GoogleAuthProvider();
+            console.log('[Config] Firebase initialized');
+        } catch (error) {
+            console.error('Error initializing Firebase:', error);
+        }
+    } else {
+        console.log('No Firebase config found.');
+    }
+});
 
 export function saveFirebaseConfig(configObj) {
     if (!configObj) return;

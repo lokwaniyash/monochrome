@@ -1,0 +1,13 @@
+{
+  "firebase": {
+    "apiKey": "AIzaSyDPU-unAjuLtQJt4IkGS5faG50UCF7lYyA",
+    "authDomain": "monochrome-database.firebaseapp.com",
+    "projectId": "monochrome-database",
+    "storageBucket": "monochrome-database.firebasestorage.app",
+    "messagingSenderId": "895657412760",
+    "appId": "1:895657412760:web:e81c5044c7f4e9b799e8ed"
+  },
+  "pocketbase": {
+    "url": "https://monodb.samidy.com"
+  }
+}

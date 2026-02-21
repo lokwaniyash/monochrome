@@ -2,15 +2,28 @@
 import PocketBase from 'pocketbase';
 import { db } from '../db.js';
 import { authManager } from './auth.js';
+import { ensureConfigLoaded, getConfig } from './config.js';
 
 const PUBLIC_COLLECTION = 'public_playlists';
 const DEFAULT_POCKETBASE_URL = 'https://monodb.samidy.com';
-const POCKETBASE_URL = localStorage.getItem('monochrome-pocketbase-url') || DEFAULT_POCKETBASE_URL;
 
-console.log('[PocketBase] Using URL:', POCKETBASE_URL);
-
-const pb = new PocketBase(POCKETBASE_URL);
+// Initialize PocketBase instance
+let pb = new PocketBase(DEFAULT_POCKETBASE_URL);
 pb.autoCancellation(false);
+
+// Load config and update URL if needed
+ensureConfigLoaded().then(() => {
+    const config = getConfig();
+    const configUrl = config.pocketbase?.url;
+    if (configUrl && configUrl !== DEFAULT_POCKETBASE_URL) {
+        pb.baseUrl = configUrl;
+        console.log('[PocketBase] Updated URL from config:', configUrl);
+    } else {
+        console.log('[PocketBase] Using default URL:', DEFAULT_POCKETBASE_URL);
+    }
+}).catch(err => {
+    console.log('[PocketBase] Config load error, using default URL:', DEFAULT_POCKETBASE_URL);
+});
 
 const syncManager = {
     pb: pb,

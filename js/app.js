@@ -434,17 +434,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeUIInteractions(player, api, ui);
     initializeKeyboardShortcuts(player, audioPlayer);
 
-    // Collaborative listening button event listener
-    document.getElementById('collab-listening-btn')?.addEventListener('click', () => {
-        const btn = document.getElementById('collab-listening-btn');
+    // Collaborative listening button event listeners
+    document.getElementById('collab-listening-start-btn')?.addEventListener('click', () => {
         if (!authManager.user) {
             alert('Please sign in to use collaborative listening');
             return;
         }
-        // Toggle between start and join modals
         const startModal = document.getElementById('collab-listening-start-modal');
+        if (startModal) startModal.classList.add('active');
+    });
+
+    document.getElementById('collab-listening-join-btn')?.addEventListener('click', () => {
+        if (!authManager.user) {
+            alert('Please sign in to use collaborative listening');
+            return;
+        }
         const joinModal = document.getElementById('collab-listening-join-modal');
-        startModal.classList.add('active');
+        if (joinModal) joinModal.classList.add('active');
     });
 
     // Restore UI state for the current track (like button, theme)
