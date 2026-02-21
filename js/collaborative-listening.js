@@ -38,7 +38,7 @@ export class CollaborativeListeningManager {
                 host_id: user.uid,
                 session_code: sessionCode,
                 session_name: sessionName || `${user.displayName || 'User'}'s Jam`,
-                members: JSON.stringify([
+                members: [
                     {
                         id: user.uid,
                         name: user.displayName || 'Anonymous',
@@ -46,13 +46,11 @@ export class CollaborativeListeningManager {
                         joinedAt: new Date().toISOString(),
                         isHost: true,
                     },
-                ]),
+                ],
                 current_track: null,
                 current_position: 0,
                 is_playing: false,
-                queue: JSON.stringify(this.player.queue),
-                created_at: new Date().toISOString(),
-                last_activity: new Date().toISOString(),
+                queue: this.player.queue,
             };
 
             const record = await syncManager.pb.collection('collaborative_sessions').create(sessionData);
@@ -60,7 +58,7 @@ export class CollaborativeListeningManager {
             this.currentSession = record;
             this.sessionCode = sessionCode;
             this.isSessionHost = true;
-            this.sessionMembers = JSON.parse(record.members);
+            this.sessionMembers = typeof record.members === 'string' ? JSON.parse(record.members) : record.members;
 
             this.saveSessionState();
             this.subscribe();
@@ -97,7 +95,7 @@ export class CollaborativeListeningManager {
             }
 
             // Check member limit
-            const members = JSON.parse(session.members);
+            const members = typeof session.members === 'string' ? JSON.parse(session.members) : session.members;
             if (members.length >= this.maxSessionSize) {
                 throw new Error(`Session is full (max ${this.maxSessionSize} members)`);
             }
@@ -117,8 +115,7 @@ export class CollaborativeListeningManager {
             });
 
             const updated = await syncManager.pb.collection('collaborative_sessions').update(session.id, {
-                members: JSON.stringify(members),
-                last_activity: new Date().toISOString(),
+                members: members,
             });
 
             this.currentSession = updated;
@@ -149,7 +146,7 @@ export class CollaborativeListeningManager {
 
         try {
             const user = authManager.user;
-            const members = JSON.parse(this.currentSession.members);
+            const members = typeof this.currentSession.members === 'string' ? JSON.parse(this.currentSession.members) : this.currentSession.members;
             const updatedMembers = members.filter((m) => m.id !== user.uid);
 
             if (updatedMembers.length === 0) {
@@ -163,9 +160,8 @@ export class CollaborativeListeningManager {
                 }
 
                 await syncManager.pb.collection('collaborative_sessions').update(this.currentSession.id, {
-                    members: JSON.stringify(updatedMembers),
+                    members: updatedMembers,
                     host_id: newHost.id,
-                    last_activity: new Date().toISOString(),
                 });
             }
 
@@ -196,11 +192,10 @@ export class CollaborativeListeningManager {
             this.syncInProgress = true;
 
             const payload = {
-                current_track: this.player.currentTrack ? JSON.stringify(this.player.currentTrack) : null,
+                current_track: this.player.currentTrack || null,
                 current_position: Math.round(this.audioElement.currentTime),
                 is_playing: !this.audioElement.paused,
-                queue: JSON.stringify(this.player.queue),
-                last_activity: new Date().toISOString(),
+                queue: this.player.queue,
             };
 
             await syncManager.pb.collection('collaborative_sessions').update(this.currentSession.id, payload);
@@ -217,7 +212,7 @@ export class CollaborativeListeningManager {
         try {
             // Update current track
             if (session.current_track) {
-                const track = JSON.parse(session.current_track);
+                const track = typeof session.current_track === 'string' ? JSON.parse(session.current_track) : session.current_track;
                 if (!this.player.currentTrack || this.player.currentTrack.id !== track.id) {
                     await this.player.playTrack(track);
                 }
@@ -241,7 +236,7 @@ export class CollaborativeListeningManager {
 
             // Update queue if different
             if (session.queue) {
-                const sessionQueue = JSON.parse(session.queue);
+                const sessionQueue = typeof session.queue === 'string' ? JSON.parse(session.queue) : session.queue;
                 if (JSON.stringify(sessionQueue) !== JSON.stringify(this.player.queue)) {
                     this.player.queue = sessionQueue;
                     this.emit('queueUpdated', { queue: sessionQueue });
@@ -263,7 +258,7 @@ export class CollaborativeListeningManager {
                 .subscribe(this.currentSession.id, (data) => {
                     if (data.action === 'update') {
                         this.currentSession = data.record;
-                        this.sessionMembers = JSON.parse(data.record.members);
+                        this.sessionMembers = typeof data.record.members === 'string' ? JSON.parse(data.record.members) : data.record.members;
                         this.emit('membersUpdated', { members: this.sessionMembers });
 
                         if (!this.isSessionHost) {
@@ -315,7 +310,7 @@ export class CollaborativeListeningManager {
             isHost: this.isSessionHost,
             members: this.sessionMembers,
             currentTrack: this.currentSession.current_track
-                ? JSON.parse(this.currentSession.current_track)
+                ? (typeof this.currentSession.current_track === 'string' ? JSON.parse(this.currentSession.current_track) : this.currentSession.current_track)
                 : null,
             isPlaying: this.currentSession.is_playing,
             createdAt: new Date(this.currentSession.created_at),
