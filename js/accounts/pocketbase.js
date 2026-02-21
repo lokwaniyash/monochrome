@@ -27,6 +27,13 @@ const syncManager = {
     _userRecordCache: null,
     _isSyncing: false,
 
+    async _ensurePbReady() {
+        if (!this.pb) {
+            this.pb = await pbReadyPromise;
+        }
+        return this.pb;
+    },
+
     async _getUserRecord(uid) {
         if (!uid) return null;
 
@@ -35,13 +42,15 @@ const syncManager = {
         }
 
         try {
-            const record = await this.pb.collection('DB_users').getFirstListItem(`firebase_id="${uid}"`, { f_id: uid });
+            const pb = await this._ensurePbReady();
+            const record = await pb.collection('DB_users').getFirstListItem(`firebase_id="${uid}"`, { f_id: uid });
             this._userRecordCache = record;
             return record;
         } catch (error) {
             if (error.status === 404) {
                 try {
-                    const newRecord = await this.pb.collection('DB_users').create(
+                    const pb = await this._ensurePbReady();
+                    const newRecord = await pb.collection('DB_users').create(
                         {
                             firebase_id: uid,
                             library: {},
@@ -100,8 +109,9 @@ const syncManager = {
         }
 
         try {
+            const pb = await this._ensurePbReady();
             const stringifiedData = typeof data === 'string' ? data : JSON.stringify(data);
-            const updated = await this.pb
+            const updated = await pb
                 .collection('DB_users')
                 .update(record.id, { [field]: stringifiedData }, { f_id: uid });
             this._userRecordCache = updated;
@@ -425,15 +435,16 @@ const syncManager = {
         };
 
         try {
-            const existing = await this.pb.collection(PUBLIC_COLLECTION).getList(1, 1, {
+            const pb = await this._ensurePbReady();
+            const existing = await pb.collection(PUBLIC_COLLECTION).getList(1, 1, {
                 filter: `uuid="${playlist.id}"`,
                 p_id: playlist.id,
             });
 
             if (existing.items.length > 0) {
-                await this.pb.collection(PUBLIC_COLLECTION).update(existing.items[0].id, data, { f_id: uid });
+                await pb.collection(PUBLIC_COLLECTION).update(existing.items[0].id, data, { f_id: uid });
             } else {
-                await this.pb.collection(PUBLIC_COLLECTION).create(data, { f_id: uid });
+                await pb.collection(PUBLIC_COLLECTION).create(data, { f_id: uid });
             }
         } catch (error) {
             console.error('Failed to publish playlist:', error);
@@ -445,13 +456,14 @@ const syncManager = {
         if (!uid) return;
 
         try {
-            const existing = await this.pb.collection(PUBLIC_COLLECTION).getList(1, 1, {
+            const pb = await this._ensurePbReady();
+            const existing = await pb.collection(PUBLIC_COLLECTION).getList(1, 1, {
                 filter: `uuid="${uuid}"`,
                 p_id: uuid,
             });
 
             if (existing.items && existing.items.length > 0) {
-                await this.pb.collection(PUBLIC_COLLECTION).delete(existing.items[0].id, { p_id: uuid, f_id: uid });
+                await pb.collection(PUBLIC_COLLECTION).delete(existing.items[0].id, { p_id: uuid, f_id: uid });
             }
         } catch (error) {
             console.error('Failed to unpublish playlist:', error);
@@ -460,7 +472,8 @@ const syncManager = {
 
     async getProfile(username) {
         try {
-            const record = await this.pb.collection('DB_users').getFirstListItem(`username="${username}"`, {
+            const pb = await this._ensurePbReady();
+            const record = await pb.collection('DB_users').getFirstListItem(`username="${username}"`, {
                 fields: 'username,display_name,avatar_url,banner,status,about,website,lastfm_username,privacy,user_playlists,favorite_albums',
             });
             return {
@@ -485,7 +498,8 @@ const syncManager = {
             updateData.privacy = JSON.stringify(updateData.privacy);
         }
 
-        await this.pb.collection('DB_users').update(record.id, updateData, { f_id: user.uid });
+        const pb = await this._ensurePbReady();
+        await pb.collection('DB_users').update(record.id, updateData, { f_id: user.uid });
         if (this._userRecordCache) {
             this._userRecordCache = { ...this._userRecordCache, ...updateData };
         }
@@ -493,7 +507,8 @@ const syncManager = {
 
     async isUsernameTaken(username) {
         try {
-            const list = await this.pb.collection('DB_users').getList(1, 1, { filter: `username="${username}"` });
+            const pb = await this._ensurePbReady();
+            const list = await pb.collection('DB_users').getList(1, 1, { filter: `username="${username}"` });
             return list.totalItems > 0;
         } catch {
             return false;
@@ -507,7 +522,8 @@ const syncManager = {
         try {
             const record = await this._getUserRecord(user.uid);
             if (record) {
-                await this.pb.collection('DB_users').delete(record.id, { f_id: user.uid });
+                const pb = await this._ensurePbReady();
+                await pb.collection('DB_users').delete(record.id, { f_id: user.uid });
                 this._userRecordCache = null;
                 alert('Cloud data cleared successfully.');
             }
