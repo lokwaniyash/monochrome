@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
             fs: {
                 allow: ['.', 'node_modules'],
             },
+            allowedHosts: ['localhost', 'monochrome.24122000.xyz'],
         },
         build: {
             outDir: 'dist',
