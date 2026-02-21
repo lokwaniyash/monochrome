@@ -1,0 +1,244 @@
+/* Collaborative Listening Styles */
+
+.collab-listening-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.collab-listening-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.collab-listening-btn.secondary {
+    background: var(--secondary);
+    color: var(--foreground);
+}
+
+.collab-listening-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #4ade80;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: bold;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+#collab-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.collab-member-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: var(--background);
+    border-radius: calc(var(--radius) - 2px);
+    font-size: 0.9rem;
+}
+
+.collab-member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.collab-member-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.collab-member-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.collab-member-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    white-space: nowrap;
+}
+
+.collab-member-badge.host {
+    background: #fbbf24;
+    color: #000;
+    font-weight: 600;
+}
+
+/* Tooltip for session code */
+.collab-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.collab-tooltip-text {
+    visibility: hidden;
+    width: 150px;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -75px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.collab-tooltip:hover .collab-tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Active session indicator in now playing bar */
+.now-playing-bar.collab-active {
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+}
+
+.collab-now-playing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.5rem;
+    background: #4ade80;
+    color: #000;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.collab-pulse-dot {
+    width: 6px;
+    height: 6px;
+    background: #000;
+    border-radius: 50%;
+    animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}
+
+/* Status messages */
+.collab-status {
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.collab-status.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.collab-status.success {
+    background: rgba(74, 222, 128, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.collab-status.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.collab-status.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Loading animation */
+.collab-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .collab-listening-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    #collab-members-list {
+        max-height: 150px;
+    }
+
+    .collab-member-item {
+        padding: 0.4rem;
+        font-size: 0.85rem;
+    }
+}

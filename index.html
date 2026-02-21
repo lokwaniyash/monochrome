@@ -45,6 +45,7 @@
             rel="stylesheet"
         />
         <link rel="stylesheet" href="/styles.css" />
+        <link rel="stylesheet" href="/css/collaborative-listening.css" />
 
         <!-- Privacy-friendly analytics by Plausible -->
         <script async src="https://plausible.canine.tools/js/pa-dCMvQpiD1-AJmi8o3xviO.js"></script>
@@ -1326,6 +1327,112 @@
                         Proceed & Don't Show Again
                     </button>
                     <button id="epilepsy-cancel-btn" class="btn-secondary" style="width: 100%">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Collaborative Listening Modals -->
+        <div id="collab-listening-start-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content" style="max-width: 400px">
+                <h3>Start a Jam Session</h3>
+                <p style="color: var(--muted-foreground); font-size: 0.9rem; margin: 1rem 0">
+                    Create a collaborative listening session to share music with friends in real-time.
+                </p>
+                <input
+                    type="text"
+                    id="collab-session-name"
+                    class="template-input"
+                    placeholder="Session name (e.g., Road Trip, Party)"
+                    style="margin-bottom: 1rem"
+                />
+                <div class="modal-actions">
+                    <button id="collab-listening-cancel-start" class="btn-secondary">Cancel</button>
+                    <button id="collab-listening-create-btn" class="btn-primary">Create Session</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="collab-listening-join-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content" style="max-width: 400px">
+                <h3>Join a Jam Session</h3>
+                <p style="color: var(--muted-foreground); font-size: 0.9rem; margin: 1rem 0">
+                    Enter a 6-character session code from someone hosting a session.
+                </p>
+                <input
+                    type="text"
+                    id="collab-session-code"
+                    class="template-input"
+                    placeholder="E.g., ABC123"
+                    style="margin-bottom: 1rem; text-transform: uppercase"
+                    maxlength="6"
+                />
+                <div class="modal-actions">
+                    <button id="collab-listening-cancel-join" class="btn-secondary">Cancel</button>
+                    <button id="collab-listening-join-btn" class="btn-primary">Join Session</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="collab-listening-active-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content" style="max-width: 500px">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem">
+                    <h3 style="margin: 0">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            style="vertical-align: middle; margin-right: 0.5rem"
+                        >
+                            <circle cx="12" cy="12" r="1" />
+                            <path d="M12 1v6m0 6v6" />
+                            <path d="M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24" />
+                            <path d="M1 12h6m6 0h6" />
+                            <path d="M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24" />
+                        </svg>
+                        Jam Session
+                    </h3>
+                    <button id="collab-leave-session-btn" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem">
+                        Leave Session
+                    </button>
+                </div>
+
+                <div style="background: var(--background-secondary); padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem">
+                    <div style="margin-bottom: 0.5rem">
+                        <span style="font-size: 0.8rem; color: var(--muted-foreground)">Session Code</span>
+                        <div style="font-family: monospace; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px" id="collab-display-code"></div>
+                    </div>
+                    <div style="margin-top: 0.5rem">
+                        <span style="font-size: 0.8rem; color: var(--muted-foreground)">Session Name</span>
+                        <div style="font-size: 0.95rem" id="collab-display-name"></div>
+                    </div>
+                    <button id="collab-copy-code-btn" class="btn-secondary" style="width: 100%; margin-top: 0.5rem; font-size: 0.85rem">
+                        Copy Session Code
+                    </button>
+                </div>
+
+                <div style="margin-bottom: 1rem">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--muted-foreground)">
+                        Session Members (<span id="collab-member-count">0</span>)
+                    </h4>
+                    <div id="collab-members-list" style="max-height: 200px; overflow-y: auto"></div>
+                </div>
+
+                <div id="collab-host-controls" style="display: none; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border)">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem">Host Controls</h4>
+                    <p style="font-size: 0.8rem; color: var(--muted-foreground)">You're hosting this session. Playback is synced from your player.</p>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="collab-close-session-modal-btn" class="btn-secondary">Close</button>
                 </div>
             </div>
         </div>
@@ -5064,6 +5171,15 @@
                             title="Save to Favorites"
                             style="display: none"
                         ></button>
+                        <button id="collab-listening-btn" class="collab-listening-btn" title="Start Jam Session">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <path d="M12 1v6m0 6v4"></path>
+                                <path d="M4.22 4.22l4.24 4.24m4.24 4.24l4.24 4.24"></path>
+                                <path d="M1 12h6m6 0h4"></path>
+                                <path d="M4.22 19.78l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+                            </svg>
+                        </button>
                         <button id="now-playing-add-playlist-btn" title="Add to Playlist" class="desktop-only">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"

@@ -17,6 +17,7 @@ import { createRouter, updateTabTitle, navigate } from './router.js';
 import { initializePlayerEvents, initializeTrackInteractions, handleTrackAction } from './events.js';
 import { initializeUIInteractions } from './ui-interactions.js';
 import { debounce, SVG_PLAY, getShareUrl } from './utils.js';
+import { initializeCollaborativeListeningUI } from './collaborative-listening-ui.js';
 import { sidePanelManager } from './side-panel.js';
 import { db } from './db.js';
 import { syncManager } from './accounts/pocketbase.js';
@@ -369,6 +370,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const scrobbler = new MultiScrobbler();
     const lyricsManager = new LyricsManager(api);
 
+    // Initialize collaborative listening feature
+    initializeCollaborativeListeningUI(player, authManager);
+
     // Check browser support for local files
     const selectLocalBtn = document.getElementById('select-local-folder-btn');
     const browserWarning = document.getElementById('local-browser-warning');
@@ -429,6 +433,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
     initializeUIInteractions(player, api, ui);
     initializeKeyboardShortcuts(player, audioPlayer);
+
+    // Collaborative listening button event listener
+    document.getElementById('collab-listening-btn')?.addEventListener('click', () => {
+        const btn = document.getElementById('collab-listening-btn');
+        if (!authManager.user) {
+            alert('Please sign in to use collaborative listening');
+            return;
+        }
+        // Toggle between start and join modals
+        const startModal = document.getElementById('collab-listening-start-modal');
+        const joinModal = document.getElementById('collab-listening-join-modal');
+        startModal.classList.add('active');
+    });
 
     // Restore UI state for the current track (like button, theme)
     if (player.currentTrack) {

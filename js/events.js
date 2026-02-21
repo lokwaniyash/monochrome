@@ -108,6 +108,15 @@ export function initializePlayerEvents(player, audioPlayer, scrobbler, ui) {
         player.updateMediaSessionPlaybackState();
         player.updateMediaSessionPositionState();
         updateTabTitle(player);
+
+        // Sync with collaborative listening if in session
+        if (window.collabListeningManager) {
+            window.collabListeningManager.syncPlayback({
+                type: 'play',
+                currentTime: audioPlayer.currentTime,
+                trackId: player.currentTrack?.id,
+            });
+        }
     });
 
     audioPlayer.addEventListener('playing', () => {
@@ -122,6 +131,15 @@ export function initializePlayerEvents(player, audioPlayer, scrobbler, ui) {
         playPauseBtn.innerHTML = SVG_PLAY;
         player.updateMediaSessionPlaybackState();
         player.updateMediaSessionPositionState();
+
+        // Sync with collaborative listening if in session
+        if (window.collabListeningManager) {
+            window.collabListeningManager.syncPlayback({
+                type: 'pause',
+                currentTime: audioPlayer.currentTime,
+                trackId: player.currentTrack?.id,
+            });
+        }
     });
 
     audioPlayer.addEventListener('ended', () => {
@@ -214,10 +232,36 @@ export function initializePlayerEvents(player, audioPlayer, scrobbler, ui) {
     nextBtn.addEventListener('click', () => {
         trackSkipTrack(player.currentTrack, 'next');
         player.playNext();
+        
+        // Sync with collaborative listening if in session
+        if (window.collabListeningManager) {
+            setTimeout(() => {
+                if (player.currentTrack) {
+                    window.collabListeningManager.syncPlayback({
+                        type: 'next',
+                        currentTime: audioPlayer.currentTime,
+                        trackId: player.currentTrack.id,
+                    });
+                }
+            }, 50);
+        }
     });
     prevBtn.addEventListener('click', () => {
         trackSkipTrack(player.currentTrack, 'previous');
         player.playPrev();
+        
+        // Sync with collaborative listening if in session
+        if (window.collabListeningManager) {
+            setTimeout(() => {
+                if (player.currentTrack) {
+                    window.collabListeningManager.syncPlayback({
+                        type: 'previous',
+                        currentTime: audioPlayer.currentTime,
+                        trackId: player.currentTrack.id,
+                    });
+                }
+            }, 50);
+        }
     });
 
     shuffleBtn.addEventListener('click', () => {
@@ -509,6 +553,16 @@ function initializeSmoothSliders(audioPlayer, player) {
             if (!isNaN(audioPlayer.duration)) {
                 audioPlayer.currentTime = lastSeekPosition * audioPlayer.duration;
                 player.updateMediaSessionPositionState();
+                
+                // Sync with collaborative listening if in session
+                if (window.collabListeningManager) {
+                    window.collabListeningManager.syncPlayback({
+                        type: 'seek',
+                        currentTime: audioPlayer.currentTime,
+                        trackId: player.currentTrack?.id,
+                    });
+                }
+                
                 if (wasPlaying) audioPlayer.play();
             }
             isSeeking = false;
@@ -524,6 +578,16 @@ function initializeSmoothSliders(audioPlayer, player) {
             if (!isNaN(audioPlayer.duration)) {
                 audioPlayer.currentTime = lastSeekPosition * audioPlayer.duration;
                 player.updateMediaSessionPositionState();
+                
+                // Sync with collaborative listening if in session
+                if (window.collabListeningManager) {
+                    window.collabListeningManager.syncPlayback({
+                        type: 'seek',
+                        currentTime: audioPlayer.currentTime,
+                        trackId: player.currentTrack?.id,
+                    });
+                }
+                
                 if (wasPlaying) audioPlayer.play();
             }
             isSeeking = false;
