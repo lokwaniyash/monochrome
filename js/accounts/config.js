@@ -34,7 +34,7 @@ function getStoredConfig() {
 // Load config from config.json file
 async function loadConfigFromFile() {
     try {
-        const response = await fetch('./config.json');
+        const response = await fetch('/config.json');
         if (!response.ok) {
             console.debug('[Config] config.json not found, using defaults');
             return null;
@@ -87,6 +87,10 @@ function getConfig() {
     const fileFirebaseConfig = fileConfig?.firebase;
     const config = window.__FIREBASE_CONFIG__ || fileFirebaseConfig || storedConfig || DEFAULT_CONFIG;
     return config;
+}
+
+function getPocketBaseUrl() {
+    return fileConfig?.pocketbaseUrl || DEFAULT_POCKETBASE_URL;
 }
 
 // Initialize on load
@@ -309,4 +313,4 @@ export function initializeFirebaseSettingsUI() {
     }
 }
 
-export { app, auth, database, provider, getConfig, loadConfigFromFile, ensureConfigLoaded, ensureAuthReady };
+export { app, auth, database, provider, getConfig, getPocketBaseUrl, loadConfigFromFile, ensureConfigLoaded, ensureAuthReady };
