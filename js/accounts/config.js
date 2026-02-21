@@ -283,4 +283,4 @@ export function initializeFirebaseSettingsUI() {
     }
 }
 
-export { app, auth, database, provider, getConfig };
+export { app, auth, database, provider, getConfig, loadConfigFromFile, ensureConfigLoaded };
