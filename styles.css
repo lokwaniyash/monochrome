@@ -1109,8 +1109,8 @@ kbd {
     background: rgba(20,20,22,0.28);
     border: 1px solid rgba(255,255,255,0.06);
     box-shadow: 0 8px 24px 0 rgba(0,0,0,0.35);
-    /* backdrop-filter: blur(14px) saturate(140%); */
-    /* -webkit-backdrop-filter: blur(14px) saturate(140%); */
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
     overflow: hidden;
     /* fallback for browsers without SVG filter support */
     /* background-blend-mode: lighten; */
@@ -1121,71 +1121,29 @@ kbd {
     animation: slide-up var(--transition-slow) var(--ease-out-back);
 }
 
-/* Simple, performant glass overlay for the now-playing bar */
-.now-playing-bar {
-    --player-glass-tint: rgba(12,12,14,0.32);
-    --player-backdrop-blur: 10px;
-    --player-noise-opacity: 0.04;
-}
-
-.now-playing-bar {
-    /* backdrop-filter: blur(var(--player-backdrop-blur)) saturate(130%);
-    -webkit-backdrop-filter: blur(var(--player-backdrop-blur)) saturate(130%);
-    background-color: color-mix(in srgb, var(--card) 75%, transparent); */
-}
-
-.now-playing-bar::marker {
-    content: "";
-}
-
-/* decorative layers: sheen + subtle noise */
-.now-playing-bar::before {
-    content: '';
+/* Liquid overlay SVG placed inside the now-playing bar */
+.now-playing-bar .liquid-overlay {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
+    mix-blend-mode: normal;
+    opacity: 0.52;
     z-index: 1;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    background: inherit;
-    filter: url(#playerLiquid);
-
-      /* background:
-    radial-gradient(140% 120% at 20% 0%,
-      rgba(255,255,255,0.22),
-      rgba(255,255,255,0.06) 35%,
-      rgba(255,255,255,0.00) 70%),
-    linear-gradient(180deg,
-      rgba(255,255,255,0.08),
-      rgba(255,255,255,0.01)); */
 }
 
-.np-glass{
-  position:absolute; inset:0;
-  z-index:0;
-  pointer-events:none;
-  border-radius: inherit;
-  background-size: auto;
-  background-repeat: no-repeat;
-  filter: url(#npGlassFilter);
-}
-
-.now-playing-bar::after {
-    /* content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    z-index: 2;
-    opacity: var(--player-noise-opacity);
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><filter id='n'><feTurbulence baseFrequency='0.8' numOctaves='1' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' fill='white' opacity='0.06'/></svg>"); */
-}
-
-/* Ensure children render above decorative layers */
-.now-playing-bar > * {
+/* Make sure content sits above the overlay */
+.now-playing-bar > *:not(.liquid-overlay) {
     position: relative;
-    z-index: 3;
+    z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .now-playing-bar .liquid-overlay svg feTurbulence,
+    .now-playing-bar .liquid-overlay svg feDisplacementMap {
+        animation: none;
+    }
 }
 
 :root[data-theme='white'] .now-playing-bar {
