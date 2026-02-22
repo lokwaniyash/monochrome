@@ -3595,6 +3595,9 @@
         </main>
 
         <footer class="now-playing-bar">
+            <!-- start of liquid glass implementation -->
+            <!-- <div class="np-glass" aria-hidden="true"></div> -->
+            <!-- end of liquid glass implementation -->
             <div class="track-info">
                 <img src="/assets/appicon.png" alt="Current Track Cover" class="cover" />
                 <div class="details">
@@ -3732,27 +3735,136 @@
 
                 </div>
             </div>
-            <!-- Liquid overlay SVG (works in Firefox and Chrome) -->
-            <div class="liquid-overlay">
-                <svg width="100%" height="100%" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <defs>
-                        <filter id="liquid-glass-svg" x="-20%" y="-20%" width="140%" height="140%">
-                            <feTurbulence baseFrequency="0.008 0.015" numOctaves="2" seed="3" type="fractalNoise" result="noise" />
-                            <feGaussianBlur in="noise" stdDeviation="2" result="noiseBlur" />
-                            <feDisplacementMap in="SourceGraphic" in2="noiseBlur" scale="6" xChannelSelector="R" yChannelSelector="G" />
-                        </filter>
-                        <linearGradient id="liquid-grad" x1="0" x2="1">
-                            <stop offset="0%" stop-color="rgba(10,10,10,0.36)" />
-                            <stop offset="60%" stop-color="rgba(10,10,10,0.24)" />
-                            <stop offset="100%" stop-color="rgba(10,10,10,0.12)" />
-                        </linearGradient>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#liquid-grad)" filter="url(#liquid-glass-svg)" />
-                    <rect width="100%" height="100%" fill="rgba(0,0,0,0.06)" />
-                </svg>
-            </div>
+            <!-- Refraction canvas will be inserted by js/liquid-refraction.js -->
         </footer>
+        <!-- add html2canvas (or bundle it) -->
+        <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+        
+        <script>
+            (async () => {
+                const bar = document.querySelector('.now-playing-bar');
+                const glass = bar?.querySelector('.np-glass');
+                if (!bar || !glass) return;
+
+                // Element that represents what's behind the bar (pick your real app scroller/root)
+                const appRoot = document.querySelector('#app') || document.querySelector('main') || document.body;
+
+                // SVG filter nodes (must exist in your SVG <defs>)
+                const dispImg = document.getElementById('npDispImg');
+                const specImg = document.getElementById('npSpecImg');
+                const dispMap = document.getElementById('npDisp');
+                const blurNode = document.getElementById('npBlur');
+                const specA = document.getElementById('npSpecA');
+
+                function imageDataToDataURL(imageData) {
+                    const c = document.createElement('canvas');
+                    c.width = imageData.width; c.height = imageData.height;
+                    c.getContext('2d').putImageData(imageData, 0, 0);
+                    return c.toDataURL('image/png');
+                }
+
+                // Reuse the repo idea: generate maps at current bar size (simple + fast starter).
+                function makeDisplacement(w, h) {
+                    const id = new ImageData(w, h);
+                    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                        const i = (y * w + x) * 4;
+                        const nx = (x / Math.max(1, w - 1)) * 2 - 1, ny = (y / Math.max(1, h - 1)) * 2 - 1;
+                        const r = Math.min(1, Math.hypot(nx, ny));
+                        const k = (1 - r) * 0.85;
+                        id.data[i] = 128 + Math.round(nx * 45 * k);
+                        id.data[i + 1] = 128 + Math.round(ny * 45 * k);
+                        id.data[i + 2] = 0; id.data[i + 3] = 255;
+                    }
+                    return id;
+                }
+                function makeSpecular(w, h) {
+                    const id = new ImageData(w, h);
+                    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                        const i = (y * w + x) * 4;
+                        const gx = (x - w * 0.22) / w, gy = (y - h * 0.08) / h;
+                        const t = Math.max(0, 1 - Math.hypot(gx, gy) * 3.0);
+                        const a = Math.round(255 * t * t);
+                        id.data[i] = 255; id.data[i + 1] = 255; id.data[i + 2] = 255; id.data[i + 3] = a;
+                    }
+                    return id;
+                }
+
+                function updateMaps() {
+                    const r = bar.getBoundingClientRect();
+                    const w = Math.max(1, Math.round(r.width));
+                    const h = Math.max(1, Math.round(r.height));
+
+                    const disp = makeDisplacement(w, h);
+                    const spec = makeSpecular(w, h);
+
+                    dispImg.setAttribute('width', w);
+                    dispImg.setAttribute('height', h);
+                    dispImg.setAttribute('href', imageDataToDataURL(disp));
+
+                    specImg.setAttribute('width', w);
+                    specImg.setAttribute('height', h);
+                    specImg.setAttribute('href', imageDataToDataURL(spec));
+
+                    dispMap.setAttribute('scale', 18);
+                    blurNode.setAttribute('stdDeviation', 0.4);
+                    specA.setAttribute('slope', 0.35);
+                }
+
+                let lastUrl = null;
+                async function updateSnapshot() {
+                    const barRect = bar.getBoundingClientRect();
+
+                    // Render only the appRoot; then crop the bar area out of it.
+                    const canvas = await html2canvas(appRoot, {
+                        backgroundColor: null,
+                        useCORS: true,
+                        scale: window.devicePixelRatio || 1,
+                        // Reduce cost: ignore the bar itself so it doesn't appear in the snapshot
+                        ignoreElements: el => el === bar || el.closest?.('.now-playing-bar')
+                    });
+
+                    const scale = canvas.width / appRoot.getBoundingClientRect().width;
+                    const rootRect = appRoot.getBoundingClientRect();
+
+                    const sx = Math.max(0, Math.round((barRect.left - rootRect.left) * scale));
+                    const sy = Math.max(0, Math.round((barRect.top - rootRect.top) * scale));
+                    const sw = Math.max(1, Math.round(barRect.width * scale));
+                    const sh = Math.max(1, Math.round(barRect.height * scale));
+
+                    const crop = document.createElement('canvas');
+                    crop.width = sw; crop.height = sh;
+                    crop.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+                    const url = crop.toDataURL('image/png');
+                    if (url !== lastUrl) {
+                        glass.style.backgroundImage = `url(${url})`;
+                        glass.style.backgroundSize = `${barRect.width}px ${barRect.height}px`;
+                        glass.style.backgroundPosition = '0 0';
+                        lastUrl = url;
+                    }
+                }
+
+                // Initial
+                updateMaps();
+                await updateSnapshot();
+
+                // Update on resize/scroll (throttle)
+                let raf = 0;
+                const requestUpdate = () => {
+                    if (raf) return;
+                    raf = requestAnimationFrame(async () => {
+                        raf = 0;
+                        updateMaps();
+                        await updateSnapshot();
+                    });
+                };
+                window.addEventListener('scroll', requestUpdate, { passive: true });
+                window.addEventListener('resize', requestUpdate);
+            })();
+        </script>
     </div>
+
+
 
     <!-- Autoplay Blocked Prompt -->
     <div id="autoplay-prompt"
@@ -3776,14 +3888,4 @@
     <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.3/dist/pocketbase.umd.js"></script>
     <script type="module" src="/js/app.js"></script>
 </body>
-
-<!-- Liquid Glass SVG Filter -->
-<svg width="0" height="0" style="position:absolute">
-    <filter id="liquid-glass" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="BLUR"/>
-        <feTurbulence type="fractalNoise" baseFrequency="0.015 0.03" numOctaves="2" seed="2" result="NOISE"/>
-        <feDisplacementMap in2="NOISE" in="BLUR" scale="18" xChannelSelector="R" yChannelSelector="G" result="DISPLACE"/>
-        <feComposite in2="SourceGraphic" in="DISPLACE" operator="atop"/>
-    </filter>
-</svg>
 </html>
