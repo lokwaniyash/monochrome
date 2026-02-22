@@ -1992,7 +1992,7 @@ input[type='search']::-webkit-search-cancel-button {
 }
 
 #playlist-detail-recommended .track-item {
-    grid-template-columns: 40px 1fr 32px 64px;
+    grid-template-columns: 40px 1fr 32px auto;
 }
 
 @media (max-width: 1100px) {
@@ -2084,7 +2084,7 @@ input[type='search']::-webkit-search-cancel-button {
 /* Track Item Standardization */
 .track-item {
     display: grid;
-    grid-template-columns: 40px 1fr 60px 40px;
+    grid-template-columns: 40px 1fr 60px auto;
     gap: var(--spacing-md);
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius-sm);
@@ -2168,7 +2168,6 @@ input[type='search']::-webkit-search-cancel-button {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: flex;
     align-items: center;
 }
 
@@ -2243,12 +2242,6 @@ input[type='search']::-webkit-search-cancel-button {
 .track-action-btn:hover {
     background-color: rgb(var(--highlight-rgb), 0.2);
     color: var(--foreground);
-}
-
-/* Editable Playlist Track Items (with remove button) */
-.is-editable .track-list-header,
-.is-editable .track-item {
-    grid-template-columns: 40px 1fr 80px 90px;
 }
 
 .detail-header {
@@ -4566,7 +4559,7 @@ input:checked + .slider::before {
 
 #playlist-detail-tracklist .track-list-header {
     display: grid;
-    grid-template-columns: 40px 1fr 80px 48px;
+    grid-template-columns: 40px 1fr 80px auto;
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-sm);
@@ -5438,6 +5431,18 @@ img[src=''] {
 }
 
 @media (max-width: 768px) {
+    html,
+    body {
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    body {
+        position: static;
+    }
+
     .player-controls .progress-container {
         order: -1;
         max-width: none;
@@ -5473,13 +5478,15 @@ img[src=''] {
             'header' auto
             'main' 1fr
             'player' auto / 1fr;
-        height: 100vh;
-        height: 100dvh;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
 
     .main-content {
         padding: var(--spacing-md);
         grid-area: main;
+        overflow-y: visible;
     }
 
     .main-header {
