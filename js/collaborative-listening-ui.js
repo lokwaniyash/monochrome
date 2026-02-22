@@ -364,15 +364,14 @@ export class CollaborativeListeningUI {
      * Updates the visual badge on the start button to indicate active session
      */
     _updateNavBadge(active) {
-        const startBtn = document.getElementById('collab-listening-start-btn');
-        const joinBtn = document.getElementById('collab-listening-join-btn');
-        if (!startBtn) return;
+        const collabBtn = document.getElementById('collab-listening-btn');
+        const fsCollabBtn = document.getElementById('fs-collab-listening-btn');
+
+        const btns = [collabBtn, fsCollabBtn].filter(Boolean);
         if (active) {
-            startBtn.classList.add('collab-active');
-            if (joinBtn) joinBtn.classList.add('collab-active');
+            btns.forEach(btn => btn.classList.add('collab-active'));
         } else {
-            startBtn.classList.remove('collab-active');
-            if (joinBtn) joinBtn.classList.remove('collab-active');
+            btns.forEach(btn => btn.classList.remove('collab-active'));
         }
     }
 

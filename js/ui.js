@@ -1138,7 +1138,7 @@ export class UIRenderer {
             if (isFsSeeking) {
                 if (!isNaN(audioPlayer.duration)) {
                     audioPlayer.currentTime = lastFsSeekPosition * audioPlayer.duration;
-                    if (wasFsPlaying) audioPlayer.play();
+                    if (wasFsPlaying) audioPlayer.play().catch(e => console.warn('FS seek play failed:', e));
                 }
                 isFsSeeking = false;
             }
@@ -1148,7 +1148,7 @@ export class UIRenderer {
             if (isFsSeeking) {
                 if (!isNaN(audioPlayer.duration)) {
                     audioPlayer.currentTime = lastFsSeekPosition * audioPlayer.duration;
-                    if (wasFsPlaying) audioPlayer.play();
+                    if (wasFsPlaying) audioPlayer.play().catch(e => console.warn('FS seek play failed:', e));
                 }
                 isFsSeeking = false;
             }
@@ -1170,6 +1170,16 @@ export class UIRenderer {
             fsQueueBtn.onclick = () => {
                 document.getElementById('queue-btn')?.click();
             };
+        }
+
+        const fsCollabBtn = document.getElementById('fs-collab-listening-btn');
+        const fsMixBtn = document.getElementById('fs-now-playing-mix-btn');
+
+        if (fsCollabBtn) {
+            fsCollabBtn.onclick = () => document.getElementById('collab-listening-btn')?.click();
+        }
+        if (fsMixBtn) {
+            fsMixBtn.onclick = () => document.getElementById('now-playing-mix-btn')?.click();
         }
 
         shuffleBtn.classList.toggle('active', this.player.shuffleActive);
@@ -2230,10 +2240,10 @@ export class UIRenderer {
                     dateDisplay =
                         window.innerWidth > 768
                             ? releaseDate.toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                              })
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                            })
                             : year;
                 }
             }
@@ -3222,9 +3232,9 @@ export class UIRenderer {
                 <span>${artist.popularity}% popularity</span>
                 <div class="artist-tags">
                     ${(artist.artistRoles || [])
-                        .filter((role) => role.category)
-                        .map((role) => `<span class="artist-tag">${role.category}</span>`)
-                        .join('')}
+                    .filter((role) => role.category)
+                    .map((role) => `<span class="artist-tag">${role.category}</span>`)
+                    .join('')}
                 </div>
             `;
 

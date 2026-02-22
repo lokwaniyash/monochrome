@@ -443,16 +443,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeUIInteractions(player, api, ui);
     initializeKeyboardShortcuts(player, audioPlayer);
 
-    // Collaborative listening button event listeners - delegate to UI class
-    document.getElementById('collab-listening-start-btn')?.addEventListener('click', () => {
-        if (!authManager.user) {
-            alert('Please sign in to use collaborative listening');
-            return;
-        }
-        window.collabListeningUI?.openStartModal();
-    });
-
-    document.getElementById('collab-listening-join-btn')?.addEventListener('click', () => {
+    // Collaborative listening button event listener - delegate to UI class
+    document.getElementById('collab-listening-btn')?.addEventListener('click', () => {
         if (!authManager.user) {
             alert('Please sign in to use collaborative listening');
             return;

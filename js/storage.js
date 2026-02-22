@@ -724,9 +724,9 @@ export const visualizerSettings = {
 
     getPreset() {
         try {
-            return localStorage.getItem(this.PRESET_KEY) || 'butterchurn';
+            return localStorage.getItem(this.PRESET_KEY) || 'unknown-pleasures';
         } catch {
-            return 'butterchurn';
+            return 'unknown-pleasures';
         }
     },
 
@@ -749,9 +749,9 @@ export const visualizerSettings = {
 
     getMode() {
         try {
-            return localStorage.getItem(this.MODE_KEY) || 'solid';
+            return localStorage.getItem(this.MODE_KEY) || 'blended';
         } catch {
-            return 'solid';
+            return 'blended';
         }
     },
 

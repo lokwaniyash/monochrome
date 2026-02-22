@@ -7,8 +7,7 @@
     padding: 0.5rem 1rem;
     border-radius: var(--radius);
     border: none;
-    background: var(--primary);
-    color: var(--primary-foreground);
+    color: var(--muted-foreground);
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.2s ease;
@@ -42,9 +41,12 @@
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.7;
     }
@@ -164,10 +166,13 @@
 }
 
 @keyframes pulse-dot {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
         transform: scale(1);
     }
+
     50% {
         opacity: 0.5;
         transform: scale(0.8);
@@ -262,7 +267,7 @@
 
 .collab-modal-content {
     background: var(--background-secondary, #1a1a1a);
-    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
     border-radius: calc(var(--radius, 8px) + 4px);
     padding: 1.75rem;
     width: 100%;
@@ -272,8 +277,15 @@
 }
 
 @keyframes collab-modal-in {
-    from { opacity: 0; transform: scale(0.95) translateY(8px); }
-    to   { opacity: 1; transform: scale(1)   translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .collab-modal-title {
@@ -314,8 +326,8 @@
     width: 100%;
     padding: 0.65rem 0.9rem;
     border-radius: var(--radius, 8px);
-    border: 1px solid var(--border, rgba(255,255,255,0.12));
-    background: var(--input, rgba(255,255,255,0.06));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
+    background: var(--input, rgba(255, 255, 255, 0.06));
     color: var(--foreground);
     font-size: 0.95rem;
     outline: none;
@@ -359,8 +371,14 @@
     transition: opacity 0.15s, transform 0.1s;
 }
 
-.collab-btn:hover { opacity: 0.85; transform: translateY(-1px); }
-.collab-btn:active { transform: translateY(0); }
+.collab-btn:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+}
+
+.collab-btn:active {
+    transform: translateY(0);
+}
 
 .collab-btn-primary {
     background: var(--primary, #7c3aed);
@@ -368,9 +386,9 @@
 }
 
 .collab-btn-secondary {
-    background: var(--secondary, rgba(255,255,255,0.08));
+    background: var(--secondary, rgba(255, 255, 255, 0.08));
     color: var(--foreground);
-    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
 }
 
 .collab-btn-danger {
@@ -431,7 +449,10 @@
     justify-content: center;
 }
 
-.collab-close-btn:hover { opacity: 1; background: rgba(255,255,255,0.07); }
+.collab-close-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.07);
+}
 
 .collab-session-title {
     font-size: 1.15rem;
@@ -442,7 +463,7 @@
 
 .collab-code-display {
     background: var(--background, #111);
-    border: 1px solid var(--border, rgba(255,255,255,0.08));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.08));
     border-radius: var(--radius, 8px);
     padding: 0.9rem 1rem;
     margin-bottom: 1.25rem;
@@ -474,7 +495,7 @@
 
 .collab-icon-btn {
     background: transparent;
-    border: 1px solid var(--border, rgba(255,255,255,0.1));
+    border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
     color: var(--foreground);
     opacity: 0.6;
     cursor: pointer;
@@ -486,7 +507,10 @@
     transition: opacity 0.15s, background 0.15s;
 }
 
-.collab-icon-btn:hover { opacity: 1; background: rgba(255,255,255,0.06); }
+.collab-icon-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.06);
+}
 
 .collab-members-section {
     margin-bottom: 1.25rem;
@@ -512,7 +536,7 @@
 }
 
 .collab-member-count-badge {
-    background: var(--secondary, rgba(255,255,255,0.08));
+    background: var(--secondary, rgba(255, 255, 255, 0.08));
     border-radius: 999px;
     padding: 0.1rem 0.5rem;
     font-size: 0.75rem;
@@ -536,23 +560,7 @@
 }
 
 /* Active state for nav buttons when in session */
-#collab-listening-start-btn.collab-active,
-#collab-listening-join-btn.collab-active {
-    position: relative;
-    color: #4ade80;
-    box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.4);
+#collab-listening-btn.collab-active,
+#fs-collab-listening-btn.collab-active {
+    color: var(--primary) !important;
 }
-
-#collab-listening-start-btn.collab-active::after,
-#collab-listening-join-btn.collab-active::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 7px;
-    height: 7px;
-    background: #4ade80;
-    border-radius: 50%;
-    animation: pulse-dot 1.5s ease-in-out infinite;
-}
-

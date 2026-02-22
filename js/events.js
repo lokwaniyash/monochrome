@@ -206,7 +206,7 @@ export function initializePlayerEvents(player, audioPlayer, scrobbler, ui) {
 
                     audioPlayer.src = newStreamUrl;
                     audioPlayer.load();
-                    await audioPlayer.play();
+                    await audioPlayer.play().catch(e => console.warn('Fallback play failed:', e));
 
                     // Reset flag after successful start
                     setTimeout(() => {
@@ -229,10 +229,25 @@ export function initializePlayerEvents(player, audioPlayer, scrobbler, ui) {
     });
 
     playPauseBtn.addEventListener('click', () => player.handlePlayPause());
+
+    const autoplayAllowBtn = document.getElementById('autoplay-allow-btn');
+    if (autoplayAllowBtn) {
+        autoplayAllowBtn.addEventListener('click', () => {
+            const prompt = document.getElementById('autoplay-prompt');
+            if (prompt) prompt.style.display = 'none';
+
+            if (audioContextManager.isReady()) {
+                audioContextManager.resume();
+            }
+
+            player.safePlay().catch(e => console.warn('Autoplay resume failed:', e));
+        });
+    }
+
     nextBtn.addEventListener('click', () => {
         trackSkipTrack(player.currentTrack, 'next');
         player.playNext();
-        
+
         // Sync with collaborative listening if in session
         if (window.collabListeningManager) {
             setTimeout(() => {
@@ -249,7 +264,7 @@ export function initializePlayerEvents(player, audioPlayer, scrobbler, ui) {
     prevBtn.addEventListener('click', () => {
         trackSkipTrack(player.currentTrack, 'previous');
         player.playPrev();
-        
+
         // Sync with collaborative listening if in session
         if (window.collabListeningManager) {
             setTimeout(() => {
@@ -553,7 +568,7 @@ function initializeSmoothSliders(audioPlayer, player) {
             if (!isNaN(audioPlayer.duration)) {
                 audioPlayer.currentTime = lastSeekPosition * audioPlayer.duration;
                 player.updateMediaSessionPositionState();
-                
+
                 // Sync with collaborative listening if in session
                 if (window.collabListeningManager) {
                     window.collabListeningManager.syncPlayback({
@@ -562,8 +577,8 @@ function initializeSmoothSliders(audioPlayer, player) {
                         trackId: player.currentTrack?.id,
                     });
                 }
-                
-                if (wasPlaying) audioPlayer.play();
+
+                if (wasPlaying) audioPlayer.play().catch(e => console.warn('Seek play failed:', e));
             }
             isSeeking = false;
         }
@@ -578,7 +593,7 @@ function initializeSmoothSliders(audioPlayer, player) {
             if (!isNaN(audioPlayer.duration)) {
                 audioPlayer.currentTime = lastSeekPosition * audioPlayer.duration;
                 player.updateMediaSessionPositionState();
-                
+
                 // Sync with collaborative listening if in session
                 if (window.collabListeningManager) {
                     window.collabListeningManager.syncPlayback({
@@ -587,8 +602,8 @@ function initializeSmoothSliders(audioPlayer, player) {
                         trackId: player.currentTrack?.id,
                     });
                 }
-                
-                if (wasPlaying) audioPlayer.play();
+
+                if (wasPlaying) audioPlayer.play().catch(e => console.warn('Seek play failed:', e));
             }
             isSeeking = false;
         }
@@ -726,11 +741,10 @@ export async function showAddToPlaylistModal(track) {
                     return `
                 <div class="modal-option ${alreadyContains ? 'already-contains' : ''}" data-id="${p.id}">
                     <span>${p.name}</span>
-                    ${
-                        alreadyContains
+                    ${alreadyContains
                             ? `<button class="remove-from-playlist-btn-modal" title="Remove from playlist" style="background: transparent; border: none; color: inherit; cursor: pointer; padding: 4px; display: flex; align-items: center;">${SVG_BIN}</button>`
                             : ''
-                    }
+                        }
                 </div>
             `;
                 })
@@ -1142,11 +1156,10 @@ export async function handleTrackAction(
                         return `
                     <div class="modal-option ${alreadyContains ? 'already-contains' : ''}" data-id="${p.id}">
                         <span>${p.name}</span>
-                        ${
-                            alreadyContains
+                        ${alreadyContains
                                 ? `<button class="remove-from-playlist-btn-modal" title="Remove from playlist" style="background: transparent; border: none; color: inherit; cursor: pointer; padding: 4px; display: flex; align-items: center;">${SVG_BIN}</button>`
                                 : ''
-                        }
+                            }
                     </div>
                 `;
                     })
@@ -1300,31 +1313,28 @@ export async function handleTrackAction(
                             ${item.trackerInfo.recordingDate ? `<p><strong style="color: var(--foreground);">Recording Date:</strong> ${escapeHtml(new Date(item.trackerInfo.recordingDate).toLocaleDateString())}</p>` : ''}
                         </div>
                         
-                        ${
-                            item.trackerInfo.description
-                                ? `
+                        ${item.trackerInfo.description
+                    ? `
                             <div style="margin-top: 1rem; padding: 0.75rem; background: var(--accent); border-radius: 8px;">
                                 <p style="color: var(--foreground); font-weight: 500; margin-bottom: 0.5rem;">Description</p>
                                 <p style="font-size: 0.85rem; line-height: 1.6;">${escapeHtml(item.trackerInfo.description)}</p>
                             </div>
                         `
-                                : ''
-                        }
+                    : ''
+                }
                         
-                        ${
-                            item.trackerInfo.notes
-                                ? `
+                        ${item.trackerInfo.notes
+                    ? `
                             <div style="margin-top: 1rem; padding: 0.75rem; background: var(--accent); border-radius: 8px;">
                                 <p style="color: var(--foreground); font-weight: 500; margin-bottom: 0.5rem;">Notes</p>
                                 <p style="font-size: 0.85rem; line-height: 1.6;">${escapeHtml(item.trackerInfo.notes)}</p>
                             </div>
                         `
-                                : ''
-                        }
+                    : ''
+                }
                         
-                        ${
-                            item.trackerInfo.sourceUrl
-                                ? `
+                        ${item.trackerInfo.sourceUrl
+                    ? `
                             <div style="margin-top: 1rem;">
                                 <p style="margin-bottom: 0.5rem;"><strong style="color: var(--foreground);">Source URL:</strong></p>
                                 <a href="${escapeHtml(item.trackerInfo.sourceUrl)}" target="_blank" style="color: var(--primary); word-break: break-all; font-size: 0.85rem; display: block; padding: 0.5rem; background: var(--accent); border-radius: 6px; text-decoration: none;">
@@ -1332,8 +1342,8 @@ export async function handleTrackAction(
                                 </a>
                             </div>
                         `
-                                : ''
-                        }
+                    : ''
+                }
                         
                         ${item.id ? `<p style="margin-top: 1rem; font-size: 0.8rem; color: var(--muted);"><strong>Track ID:</strong> ${escapeHtml(item.id)}</p>` : ''}
                     </div>
@@ -1364,9 +1374,8 @@ export async function handleTrackAction(
                             <p><strong style="color: var(--foreground);">Quality:</strong> ${escapeHtml(quality)} ${bitrate ? `(${escapeHtml(bitrate)})` : ''}</p>
                         </div>
                         
-                        ${
-                            item.credits && item.credits.length > 0
-                                ? `
+                        ${item.credits && item.credits.length > 0
+                    ? `
                             <div style="margin-top: 1rem; padding: 0.75rem; background: var(--accent); border-radius: 8px;">
                                 <p style="color: var(--foreground); font-weight: 500; margin-bottom: 0.5rem;">Credits</p>
                                 <div style="font-size: 0.85rem; line-height: 1.6;">
@@ -1374,26 +1383,24 @@ export async function handleTrackAction(
                                 </div>
                             </div>
                         `
-                                : ''
-                        }
+                    : ''
+                }
                         
-                        ${
-                            item.composers && item.composers.length > 0
-                                ? `
+                        ${item.composers && item.composers.length > 0
+                    ? `
                             <p style="margin-top: 0.5rem;"><strong style="color: var(--foreground);">Composers:</strong> ${escapeHtml(item.composers.map((c) => c.name).join(', '))}</p>
                         `
-                                : ''
-                        }
+                    : ''
+                }
                         
-                        ${
-                            item.lyrics?.text
-                                ? `
+                        ${item.lyrics?.text
+                    ? `
                             <div style="margin-top: 1rem; padding: 0.75rem; background: var(--accent); border-radius: 8px;">
                                 <p style="color: var(--foreground); font-weight: 500; margin-bottom: 0.5rem;">Has Lyrics</p>
                             </div>
                         `
-                                : ''
-                        }
+                    : ''
+                }
                         
                         ${item.id ? `<p style="margin-top: 1rem; font-size: 0.8rem; color: var(--muted);"><strong>Track ID:</strong> ${escapeHtml(item.id)}</p>` : ''}
                         ${item.album?.id ? `<p style="font-size: 0.8rem; color: var(--muted);"><strong>Album ID:</strong> ${escapeHtml(item.album.id)}</p>` : ''}
@@ -1571,8 +1578,8 @@ async function updateContextMenuLikeState(contextMenu, contextTrack) {
         const artists = Array.isArray(contextTrack.artists)
             ? contextTrack.artists
             : contextTrack.artist
-              ? [contextTrack.artist]
-              : [];
+                ? [contextTrack.artist]
+                : [];
         const canShowArtist = type === 'track' || type === 'album';
 
         if (artists.length > 1 && canShowArtist) {
@@ -1823,12 +1830,12 @@ export function initializeTrackInteractions(player, api, mainContent, contextMen
             const type = card.dataset.albumId
                 ? 'album'
                 : card.dataset.playlistId
-                  ? 'playlist'
-                  : card.dataset.mixId
-                    ? 'mix'
-                    : card.dataset.href
-                      ? card.dataset.href.split('/')[1]
-                      : 'item';
+                    ? 'playlist'
+                    : card.dataset.mixId
+                        ? 'mix'
+                        : card.dataset.href
+                            ? card.dataset.href.split('/')[1]
+                            : 'item';
             const id = card.dataset.albumId || card.dataset.playlistId || card.dataset.mixId;
 
             const item = trackDataStore.get(card) || {
