@@ -128,14 +128,22 @@
     <div id="fullscreen-cover-overlay" style="display: none">
         <div class="fullscreen-cover-content">
             <canvas id="visualizer-canvas"></canvas>
-            <button id="close-fullscreen-cover-btn" title="Close">&times;</button>
+            <button id="close-fullscreen-cover-btn" title="Close" class="fullscreen-lyrics-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </button>
             <button id="toggle-fullscreen-lyrics-btn" class="fullscreen-lyrics-toggle" title="Toggle Lyrics">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                    <line x1="12" y1="19" x2="12" y2="22" />
-                    <line x1="8" y1="22" x2="16" y2="22" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="lucide lucide-file-music-icon lucide-file-music">
+                    <path
+                        d="M11.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v10.35" />
+                    <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                    <path d="M8 20v-7l3 1.474" />
+                    <circle cx="6" cy="20" r="2" />
                 </svg>
             </button>
             <div class="fullscreen-main-view">
@@ -156,30 +164,10 @@
                             </svg>
                         </button>
                         <button id="fs-add-playlist-btn" class="btn-icon" title="Add to Playlist">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                        </button>
-                        <button id="fs-download-btn" class="btn-icon" title="Download">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                        </button>
-                        <button id="fs-cast-btn" class="btn-icon" title="Cast">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"></path>
-                                <path d="M2 12a9 9 0 0 1 9 9"></path>
-                                <path d="M2 17a5 5 0 0 1 5 5"></path>
-                                <path d="M2 22h.01"></path>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 8v8M8 12h8" />
                             </svg>
                         </button>
                         <button id="fs-queue-btn" class="btn-icon" title="Queue">
@@ -205,10 +193,20 @@
                             </svg>
                         </button>
                         <button id="fs-now-playing-mix-btn" class="btn-icon mix-btn" title="Track Mix">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                class="lucide lucide-audio-waveform-icon lucide-audio-waveform">
+                                <path d="M2 13a2 2 0 0 0 2-2V7a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0V4a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0v-4a2 2 0 0 1 2-2" />
+                            </svg>
+                        </button>
+                        <button id="fs-cast-btn" class="btn-icon" title="Cast">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                                fill="currentColor">
-                                <path
-                                    d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"></path>
+                                <path d="M2 12a9 9 0 0 1 9 9"></path>
+                                <path d="M2 17a5 5 0 0 1 5 5"></path>
+                                <path d="M2 22h.01"></path>
                             </svg>
                         </button>
                     </div>
@@ -964,7 +962,7 @@
     </div>
 
     <!-- Collaborative Listening Modals -->
-    <div id="collab-listening-start-modal" class="modal">
+    <!-- <div id="collab-listening-start-modal" class="modal">
         <div class="modal-overlay"></div>
         <div class="modal-content" style="max-width: 400px">
             <h3>Start a Jam Session</h3>
@@ -978,20 +976,22 @@
                 <button id="collab-listening-create-btn" class="btn-primary">Create Session</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div id="collab-listening-join-modal" class="modal">
         <div class="modal-overlay"></div>
         <div class="modal-content" style="max-width: 400px">
-            <h3>Join a Jam Session</h3>
-            <p style="color: var(--muted-foreground); font-size: 0.9rem; margin: 1rem 0">
-                Enter a 6-character session code from someone hosting a session.
-            </p>
-            <input type="text" id="collab-session-code" class="template-input" placeholder="E.g., ABC123"
-                style="margin-bottom: 1rem; text-transform: uppercase" maxlength="6" />
-            <div class="modal-actions">
-                <button id="collab-listening-cancel-join" class="btn-secondary">Cancel</button>
-                <button id="collab-listening-join-btn" class="btn-primary">Join Session</button>
+            <div class="collab-liistening-start-panel">
+            </div>
+            <div class="collab-liistening-start-panel">
+                <input type="text" id="collab-session-code" class="template-input" placeholder="Join Code (ABC123,  DEF456, ...)"
+                    style="margin-bottom: 1rem" maxlength="6" />
+                <div class="modal-actions">
+                    <button id="collab-listening-cancel-join" class="btn-secondary">Cancel</button>
+                    <button id="collab-listening-create-btn" class="btn-primary">Create</button>
+                    or
+                    <button id="collab-listening-join-btn" class="btn-primary">Join</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1015,6 +1015,10 @@
                 <button id="collab-leave-session-btn" class="btn-secondary"
                     style="padding: 0.5rem 1rem; font-size: 0.85rem">
                     Leave Session
+                </button>
+                <button id="collab-delete-session-btn" class="btn-secondary"
+                    style="padding: 0.5rem 1rem; font-size: 0.85rem">
+                    Delete Session
                 </button>
             </div>
 
@@ -3654,6 +3658,25 @@
                 <div class="player-actions-row">
                     <button id="now-playing-like-btn" class="like-btn" data-action="toggle-like"
                         title="Save to Favorites" style="display: none"></button>
+                    <button id="now-playing-add-playlist-btn" title="Add to Playlist" class="desktop-only">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 8v8M8 12h8" />
+                        </svg>
+                    </button>
+                    <button id="queue-btn" title="Queue">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-list-icon lucide-list">
+                            <path d="M3 5h.01" />
+                            <path d="M3 12h.01" />
+                            <path d="M3 19h.01" />
+                            <path d="M8 5h13" />
+                            <path d="M8 12h13" />
+                            <path d="M8 19h13" />
+                        </svg>
+                    </button>
                     <button id="collab-listening-btn" class="collab-listening-btn desktop-only" title="Jam Session">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                             class="jam-icon" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -3664,38 +3687,23 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
                     </button>
-                    <button id="now-playing-add-playlist-btn" title="Add to Playlist" class="desktop-only">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 8v8M8 12h8" />
+                    <button id="toggle-lyrics-btn" title="Lyrics" style="display: none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-file-music-icon lucide-file-music">
+                            <path
+                                d="M11.65 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v10.35" />
+                            <path d="M14 2v5a1 1 0 0 0 1 1h5" />
+                            <path d="M8 20v-7l3 1.474" />
+                            <circle cx="6" cy="20" r="2" />
                         </svg>
                     </button>
-
                     <button id="now-playing-mix-btn" class="mix-btn desktop-only" data-action="track-mix"
                         title="Track Mix" style="display: none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                            fill="currentColor">
-                            <path
-                                d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                        </svg>
-                    </button>
-                    <button id="toggle-lyrics-btn" title="Lyrics" style="display: none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="lucide lucide-mic">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                            <line x1="12" y1="19" x2="12" y2="22" />
-                            <line x1="8" y1="22" x2="16" y2="22" />
-                        </svg>
-                    </button>
-                    <button id="download-current-btn" title="Download current track" class="desktop-only">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="lucide lucide-audio-waveform-icon lucide-audio-waveform">
+                            <path d="M2 13a2 2 0 0 0 2-2V7a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0V4a2 2 0 0 1 4 0v13a2 2 0 0 0 4 0v-4a2 2 0 0 1 2-2" />
                         </svg>
                     </button>
                     <button id="cast-btn" title="Cast">
@@ -3713,18 +3721,6 @@
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10" />
                             <path d="M12 8v8M8 12h8" />
-                        </svg>
-                    </button>
-                    <button id="queue-btn" title="Queue">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                            class="lucide lucide-list-icon lucide-list">
-                            <path d="M3 5h.01" />
-                            <path d="M3 12h.01" />
-                            <path d="M3 19h.01" />
-                            <path d="M8 5h13" />
-                            <path d="M8 12h13" />
-                            <path d="M8 19h13" />
                         </svg>
                     </button>
                 </div>

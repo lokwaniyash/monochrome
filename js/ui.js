@@ -888,7 +888,7 @@ export class UIRenderer {
         }
 
         const qualityBadge = createQualityBadgeHTML(track);
-        title.innerHTML = `${escapeHtml(track.title)} ${qualityBadge}`;
+        title.innerHTML = `<div class="track-title-container">${escapeHtml(track.title)}</div> ${qualityBadge}`;
         artist.textContent = getTrackArtists(track);
 
         if (nextTrack) {

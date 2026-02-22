@@ -26,7 +26,7 @@ export class CollaborativeListeningUI {
 
         // Button elements
         this.createBtn = document.getElementById('collab-listening-create-btn');
-        this.joinBtn = document.getElementById('collab-listening-join-session-btn');
+        this.joinBtn = document.getElementById('collab-listening-join-btn');
         this.leaveBtn = document.getElementById('collab-leave-session-btn');
         this.copyCodeBtn = document.getElementById('collab-copy-code-btn');
         this.closeModalBtn = document.getElementById('collab-close-session-modal-btn');
