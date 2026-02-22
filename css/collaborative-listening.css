@@ -233,10 +233,10 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .collab-listening-btn {
+    /* .collab-listening-btn {
         padding: 0.4rem 0.8rem;
         font-size: 0.8rem;
-    }
+    } */
 
     #collab-members-list {
         max-height: 150px;

@@ -3737,20 +3737,18 @@
                 <svg width="100%" height="100%" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <defs>
                         <filter id="liquid-glass-svg" x="-20%" y="-20%" width="140%" height="140%">
-                            <feTurbulence baseFrequency="0.01 0.02" numOctaves="2" seed="3" type="fractalNoise" result="noise" />
-                            <feGaussianBlur in="noise" stdDeviation="4" result="noiseBlur" />
-                            <feDisplacementMap in="SourceGraphic" in2="noiseBlur" scale="10" xChannelSelector="R" yChannelSelector="G" />
+                            <feTurbulence baseFrequency="0.008 0.015" numOctaves="2" seed="3" type="fractalNoise" result="noise" />
+                            <feGaussianBlur in="noise" stdDeviation="2" result="noiseBlur" />
+                            <feDisplacementMap in="SourceGraphic" in2="noiseBlur" scale="6" xChannelSelector="R" yChannelSelector="G" />
                         </filter>
                         <linearGradient id="liquid-grad" x1="0" x2="1">
-                            <stop offset="0%" stop-color="rgba(255,255,255,0.12)" />
-                            <stop offset="60%" stop-color="rgba(255,255,255,0.06)" />
-                            <stop offset="100%" stop-color="rgba(255,255,255,0.02)" />
+                            <stop offset="0%" stop-color="rgba(10,10,10,0.36)" />
+                            <stop offset="60%" stop-color="rgba(10,10,10,0.24)" />
+                            <stop offset="100%" stop-color="rgba(10,10,10,0.12)" />
                         </linearGradient>
                     </defs>
                     <rect width="100%" height="100%" fill="url(#liquid-grad)" filter="url(#liquid-glass-svg)" />
-                    <rect width="100%" height="100%" fill="rgba(255,255,255,0.03)" />
-                    <!-- optional subtle animated movement for the turbulence (reduced for performance) -->
-                    <animate xlink:href="#" attributeName="baseFrequency" dur="8s" values="0.012 0.02;0.01 0.025;0.015 0.018;0.012 0.02" repeatCount="indefinite" />
+                    <rect width="100%" height="100%" fill="rgba(0,0,0,0.06)" />
                 </svg>
             </div>
         </footer>

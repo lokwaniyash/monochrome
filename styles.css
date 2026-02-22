@@ -1106,11 +1106,11 @@ kbd {
 
     /* Standardized radius */
     position: fixed !important;
-    background: rgba(255,255,255,0.12);
-    border: 1.5px solid rgba(255,255,255,0.22);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    background: rgba(20,20,22,0.28);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 8px 24px 0 rgba(0,0,0,0.35);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
     overflow: hidden;
     /* fallback for browsers without SVG filter support */
     /* background-blend-mode: lighten; */
@@ -1128,8 +1128,8 @@ kbd {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    mix-blend-mode: overlay;
-    opacity: 0.32;
+    mix-blend-mode: normal;
+    opacity: 0.52;
     z-index: 1;
 }
 
