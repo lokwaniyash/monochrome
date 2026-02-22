@@ -53,7 +53,8 @@ export class CollaborativeListeningManager {
                 queue: this.player.queue,
             };
 
-            const record = await syncManager.pb.collection('collaborative_sessions').create(sessionData);
+            const pb = await syncManager._ensurePbReady();
+            const record = await pb.collection('collaborative_sessions').create(sessionData);
 
             this.currentSession = record;
             this.sessionCode = sessionCode;
@@ -61,7 +62,7 @@ export class CollaborativeListeningManager {
             this.sessionMembers = typeof record.members === 'string' ? JSON.parse(record.members) : record.members;
 
             this.saveSessionState();
-            this.subscribe();
+            await this.subscribe();
             this.emit('sessionCreated', { sessionCode, sessionId: record.id });
 
             return {
@@ -82,15 +83,16 @@ export class CollaborativeListeningManager {
         }
 
         try {
+            const pb = await syncManager._ensurePbReady();
             // Find session by code
-            const session = await syncManager.pb
+            const session = await pb
                 .collection('collaborative_sessions')
                 .getFirstListItem(`session_code="${sessionCode.toUpperCase()}"`);
 
             // Check if session is still valid (not older than 24 hours)
             const createdTime = new Date(session.created_at).getTime();
             if (Date.now() - createdTime > this.sessionTimeout) {
-                await syncManager.pb.collection('collaborative_sessions').delete(session.id);
+                await pb.collection('collaborative_sessions').delete(session.id);
                 throw new Error('Session has expired');
             }
 
@@ -114,7 +116,7 @@ export class CollaborativeListeningManager {
                 isHost: false,
             });
 
-            const updated = await syncManager.pb.collection('collaborative_sessions').update(session.id, {
+            const updated = await pb.collection('collaborative_sessions').update(session.id, {
                 members: members,
             });
 
@@ -124,7 +126,7 @@ export class CollaborativeListeningManager {
             this.sessionMembers = members;
 
             this.saveSessionState();
-            this.subscribe();
+            await this.subscribe();
             this.emit('sessionJoined', { sessionCode, sessionId: session.id });
 
             return {
@@ -151,7 +153,8 @@ export class CollaborativeListeningManager {
 
             if (updatedMembers.length === 0) {
                 // Delete session if no members left
-                await syncManager.pb.collection('collaborative_sessions').delete(this.currentSession.id);
+                const pb = await syncManager._ensurePbReady();
+                await pb.collection('collaborative_sessions').delete(this.currentSession.id);
             } else {
                 // Update members list
                 const newHost = updatedMembers[0];
@@ -159,7 +162,8 @@ export class CollaborativeListeningManager {
                     newHost.isHost = true;
                 }
 
-                await syncManager.pb.collection('collaborative_sessions').update(this.currentSession.id, {
+                const pb = await syncManager._ensurePbReady();
+                await pb.collection('collaborative_sessions').update(this.currentSession.id, {
                     members: updatedMembers,
                     host_id: newHost.id,
                 });
@@ -177,6 +181,7 @@ export class CollaborativeListeningManager {
     // ==================== Playback Sync ====================
 
     async syncPlayback() {
+        console.log(this.currentSession, this.isSessionHost, this.syncInProgress);
         if (!this.currentSession || !this.isSessionHost || this.syncInProgress) {
             return;
         }
@@ -198,7 +203,8 @@ export class CollaborativeListeningManager {
                 queue: this.player.queue,
             };
 
-            await syncManager.pb.collection('collaborative_sessions').update(this.currentSession.id, payload);
+            const pb = await syncManager._ensurePbReady();
+            await pb.collection('collaborative_sessions').update(this.currentSession.id, payload);
         } catch (error) {
             console.error('[CollaborativeListening] Failed to sync playback:', error);
         } finally {
@@ -210,11 +216,30 @@ export class CollaborativeListeningManager {
         if (this.isSessionHost) return; // Hosts don't apply changes from session
 
         try {
-            // Update current track
+            // Update current track - use setQueue + playAtIndex since playTrack doesn't exist
             if (session.current_track) {
                 const track = typeof session.current_track === 'string' ? JSON.parse(session.current_track) : session.current_track;
-                if (!this.player.currentTrack || this.player.currentTrack.id !== track.id) {
-                    await this.player.playTrack(track);
+                const isSameTrack = this.player.currentTrack && this.player.currentTrack.id === track.id;
+                if (!isSameTrack) {
+                    // Build the queue: synced track first, then the rest of the session queue if available
+                    const sessionQueue = session.queue
+                        ? (typeof session.queue === 'string' ? JSON.parse(session.queue) : session.queue)
+                        : null;
+
+                    if (sessionQueue && Array.isArray(sessionQueue) && sessionQueue.length > 0) {
+                        // Find the track's position in the session queue to preserve order
+                        const trackIndex = sessionQueue.findIndex((t) => t.id === track.id);
+                        if (trackIndex !== -1) {
+                            this.player.setQueue(sessionQueue, trackIndex);
+                        } else {
+                            // Track not in queue; prepend it
+                            this.player.setQueue([track, ...sessionQueue], 0);
+                        }
+                    } else {
+                        // No queue info - just set the single track
+                        this.player.setQueue([track], 0);
+                    }
+                    this.player.playTrackFromQueue(0, 0);
                 }
             }
 
@@ -249,11 +274,12 @@ export class CollaborativeListeningManager {
 
     // ==================== Real-time Subscriptions ====================
 
-    subscribe() {
+    async subscribe() {
         if (!this.currentSession) return;
 
         try {
-            this.unsubscribe = syncManager.pb
+            const pb = await syncManager._ensurePbReady();
+            this.unsubscribe = await pb
                 .collection('collaborative_sessions')
                 .subscribe(this.currentSession.id, (data) => {
                     if (data.action === 'update') {
@@ -332,13 +358,80 @@ export class CollaborativeListeningManager {
         const saved = sessionStorage.getItem('collaborative_session');
         if (saved) {
             try {
-                const state = JSON.parse(saved);
-                // TODO: Restore session when app reloads
-                console.log('[CollaborativeListening] Found saved session state:', state);
+                return JSON.parse(saved);
             } catch (error) {
-                console.error('[CollaborativeListening] Failed to load session state:', error);
+                console.error('[CollaborativeListening] Failed to parse saved session state:', error);
             }
         }
+        return null;
+    }
+
+    async restoreSession() {
+        const user = authManager.user;
+        if (!user) return null;
+
+        // --- Step 1: Try sessionStorage fast-path ---
+        const state = this.loadSessionState();
+        if (state?.sessionId) {
+            try {
+                const pb = await syncManager._ensurePbReady();
+                const record = await pb.collection('collaborative_sessions').getOne(state.sessionId);
+                const members = typeof record.members === 'string' ? JSON.parse(record.members) : record.members;
+                const isMember = members.some((m) => m.id === user.uid);
+                if (isMember) {
+                    return this._applyRestoredSession(record, members, user);
+                }
+                // Not a member anymore — fall through to PocketBase scan
+                this.clearSessionState();
+                console.log('[CollaborativeListening] No longer a member of saved session, scanning PocketBase...');
+            } catch (_) {
+                // Session deleted — clear storage and fall through
+                this.clearSessionState();
+                console.log('[CollaborativeListening] Saved session gone, scanning PocketBase...');
+            }
+        }
+
+        // --- Step 2: PocketBase fallback — scan recent sessions for user membership ---
+        try {
+            // Fetch the most recent 50 sessions and check membership client-side
+            // (PocketBase JSON field filtering is limited, so we scan)
+            const pb = await syncManager._ensurePbReady();
+            const result = await pb.collection('collaborative_sessions').getList(1, 50, {
+                sort: '-created',
+            });
+
+            for (const record of result.items) {
+                const members = typeof record.members === 'string' ? JSON.parse(record.members) : record.members;
+                const isMember = Array.isArray(members) && members.some((m) => m.id === user.uid);
+                if (isMember) {
+                    console.log('[CollaborativeListening] Found session via PocketBase scan:', record.session_code);
+                    return this._applyRestoredSession(record, members, user);
+                }
+            }
+
+            console.log('[CollaborativeListening] No active session found for user in PocketBase');
+            return null;
+        } catch (error) {
+            console.error('[CollaborativeListening] PocketBase session scan failed:', error.message);
+            return null;
+        }
+    }
+
+    async _applyRestoredSession(record, members, user) {
+        this.currentSession = record;
+        this.sessionCode = record.session_code;
+        this.isSessionHost = record.host_id === user.uid;
+        this.sessionMembers = members;
+        this.saveSessionState();
+        await this.subscribe();
+        console.log('[CollaborativeListening] Session restored:', record.session_code, 'isHost:', this.isSessionHost);
+        return {
+            sessionCode: record.session_code,
+            sessionId: record.id,
+            sessionName: record.session_name,
+            isHost: this.isSessionHost,
+            members,
+        };
     }
 
     clearSessionState() {

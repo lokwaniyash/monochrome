@@ -26,7 +26,7 @@ export class CollaborativeListeningUI {
 
         // Button elements
         this.createBtn = document.getElementById('collab-listening-create-btn');
-        this.joinBtn = document.getElementById('collab-listening-join-btn');
+        this.joinBtn = document.getElementById('collab-listening-join-session-btn');
         this.leaveBtn = document.getElementById('collab-leave-session-btn');
         this.copyCodeBtn = document.getElementById('collab-copy-code-btn');
         this.closeModalBtn = document.getElementById('collab-close-session-modal-btn');
@@ -48,12 +48,20 @@ export class CollaborativeListeningUI {
         this.joinBtn?.addEventListener('click', () => this.handleJoinSession());
         document.getElementById('collab-listening-cancel-join')?.addEventListener('click', () => this.closeJoinModal());
 
-        // Leave session
+        // Leave / Delete session
         this.leaveBtn?.addEventListener('click', () => this.handleLeaveSession());
+        document.getElementById('collab-delete-session-btn')?.addEventListener('click', () => this.handleDeleteSession());
+
+        // Close active modal (just hides it, stays in session)
+        this.closeModalBtn?.addEventListener('click', () => this.closeActiveModal());
 
         // Utilities
         this.copyCodeBtn?.addEventListener('click', () => this.copySessionCode());
-        this.closeModalBtn?.addEventListener('click', () => this.closeActiveModal());
+
+        // Close modals when clicking backdrop
+        this.startModal?.addEventListener('click', (e) => { if (e.target === this.startModal) this.closeStartModal(); });
+        this.joinModal?.addEventListener('click', (e) => { if (e.target === this.joinModal) this.closeJoinModal(); });
+        this.activeModal?.addEventListener('click', (e) => { if (e.target === this.activeModal) this.closeActiveModal(); });
 
         // Listen for manager events
         this.manager.on('sessionCreated', (data) => this.onSessionCreated(data));
@@ -71,6 +79,13 @@ export class CollaborativeListeningUI {
     async handleCreateSession() {
         if (!authManager.user) {
             this.showError('You must be logged in to create a session');
+            return;
+        }
+
+        // If already in a session, just show active modal
+        if (this.manager.isInSession()) {
+            this.closeStartModal();
+            this.showActiveModal();
             return;
         }
 
@@ -93,6 +108,13 @@ export class CollaborativeListeningUI {
             return;
         }
 
+        // If already in a session, just show the active modal info
+        if (this.manager.isInSession()) {
+            this.closeJoinModal();
+            this.showActiveModal();
+            return;
+        }
+
         const sessionCode = this.sessionCodeInput?.value?.trim();
         if (!sessionCode || sessionCode.length !== 6) {
             this.showError('Please enter a valid 6-character session code');
@@ -106,7 +128,13 @@ export class CollaborativeListeningUI {
             this.showActiveModal();
             this.showSuccess('Successfully joined the session!');
         } catch (error) {
-            this.showError(`Failed to join session: ${error.message}`);
+            // If "already in this session" error, show active modal instead
+            if (error.message && error.message.toLowerCase().includes('already in this session')) {
+                this.closeJoinModal();
+                this.showActiveModal();
+            } else {
+                this.showError(`Failed to join session: ${error.message}`);
+            }
         }
     }
 
@@ -124,35 +152,60 @@ export class CollaborativeListeningUI {
         }
     }
 
+    async handleDeleteSession() {
+        if (!confirm('Are you sure you want to end this jam session for everyone?')) {
+            return;
+        }
+
+        try {
+            // Host leaving deletes the session when they are the host
+            await this.manager.leaveSession();
+            this.closeActiveModal();
+            this.showSuccess('Session ended');
+        } catch (error) {
+            this.showError(`Failed to end session: ${error.message}`);
+        }
+    }
+
     // ==================== Modal Management ====================
 
     openStartModal() {
-        this.sessionNameInput.value = '';
-        this.startModal?.style.removeProperty('display');
+        // If already in a session, show the active session info instead
+        if (this.manager.isInSession()) {
+            this.showActiveModal();
+            return;
+        }
+        if (this.sessionNameInput) this.sessionNameInput.value = '';
+        this.startModal?.classList.add('active');
         this.sessionNameInput?.focus();
     }
 
     closeStartModal() {
-        this.startModal?.style.setProperty('display', 'none', 'important');
+        this.startModal?.classList.remove('active');
     }
 
     openJoinModal() {
-        this.sessionCodeInput.value = '';
-        this.joinModal?.style.removeProperty('display');
+        // If already in a session, show the active session info instead
+        if (this.manager.isInSession()) {
+            this.showActiveModal();
+            return;
+        }
+        if (this.sessionCodeInput) this.sessionCodeInput.value = '';
+        this.joinModal?.classList.add('active');
         this.sessionCodeInput?.focus();
     }
 
     closeJoinModal() {
-        this.joinModal?.style.setProperty('display', 'none', 'important');
+        this.joinModal?.classList.remove('active');
     }
 
     showActiveModal() {
-        this.activeModal?.style.removeProperty('display');
+        this.activeModal?.classList.add('active');
         this.updateSessionDisplay();
     }
 
     closeActiveModal() {
-        this.activeModal?.style.setProperty('display', 'none', 'important');
+        this.activeModal?.classList.remove('active');
     }
 
     // ==================== Display Updates ====================
@@ -165,23 +218,30 @@ export class CollaborativeListeningUI {
         }
 
         // Update code and name
-        this.displayCode.textContent = sessionInfo.sessionCode;
-        this.displayName.textContent = sessionInfo.sessionName;
+        if (this.displayCode) this.displayCode.textContent = sessionInfo.sessionCode;
+        if (this.displayName) this.displayName.textContent = sessionInfo.sessionName;
 
         // Update members
-        this.updateMembersList(sessionInfo.members);
+        if (sessionInfo.members) this.updateMembersList(sessionInfo.members);
 
-        // Show host controls if user is host
+        // Show host controls (delete btn) only if user is host
+        // Show leave btn for guests
+        const deleteBtn = document.getElementById('collab-delete-session-btn');
         if (sessionInfo.isHost) {
-            this.hostControls?.style.removeProperty('display');
+            this.hostControls?.classList.remove('hidden');
+            if (deleteBtn) deleteBtn.style.display = 'flex';
+            if (this.leaveBtn) this.leaveBtn.style.display = 'none';
         } else {
-            this.hostControls?.style.setProperty('display', 'none', 'important');
+            this.hostControls?.classList.add('hidden');
+            if (deleteBtn) deleteBtn.style.display = 'none';
+            if (this.leaveBtn) this.leaveBtn.style.display = 'flex';
         }
     }
 
     updateMembersList(members) {
+        if (!this.membersList) return;
         this.membersList.innerHTML = '';
-        this.memberCount.textContent = members.length;
+        if (this.memberCount) this.memberCount.textContent = members.length;
 
         members.forEach((member) => {
             const memberEl = document.createElement('div');
@@ -234,15 +294,19 @@ export class CollaborativeListeningUI {
     onSessionCreated(data) {
         console.log('[CollaborativeListening UI] Session created:', data);
         this.updateSessionDisplay();
+        // Update button badge to show active session
+        this._updateNavBadge(true);
     }
 
     onSessionJoined(data) {
         console.log('[CollaborativeListening UI] Session joined:', data);
         this.updateSessionDisplay();
+        this._updateNavBadge(true);
     }
 
     onSessionLeft(data) {
         console.log('[CollaborativeListening UI] Session left');
+        this._updateNavBadge(false);
         this.showSuccess('Left the Jam session');
     }
 
@@ -297,19 +361,33 @@ export class CollaborativeListeningUI {
     }
 
     /**
-     * Should be called when app initializes
-     * to check if there's an active session to restore
+     * Updates the visual badge on the start button to indicate active session
+     */
+    _updateNavBadge(active) {
+        const startBtn = document.getElementById('collab-listening-start-btn');
+        const joinBtn = document.getElementById('collab-listening-join-btn');
+        if (!startBtn) return;
+        if (active) {
+            startBtn.classList.add('collab-active');
+            if (joinBtn) joinBtn.classList.add('collab-active');
+        } else {
+            startBtn.classList.remove('collab-active');
+            if (joinBtn) joinBtn.classList.remove('collab-active');
+        }
+    }
+
+    /**
+     * Should be called when app initializes to restore any active session from the previous page load.
      */
     async restoreActiveSession() {
-        const saved = sessionStorage.getItem('collaborative_session');
-        if (saved) {
-            try {
-                const state = JSON.parse(saved);
-                console.log('[CollaborativeListening UI] Restoring session:', state);
-                // Could restore session here if needed
-            } catch (error) {
-                console.error('[CollaborativeListening UI] Failed to restore session:', error);
+        try {
+            const restored = await this.manager.restoreSession();
+            if (restored) {
+                console.log('[CollaborativeListening UI] Session restored:', restored.sessionCode);
+                this._updateNavBadge(true);
             }
+        } catch (error) {
+            console.error('[CollaborativeListening UI] Failed to restore session:', error);
         }
     }
 
@@ -335,8 +413,9 @@ let collabListeningInstance = null;
 export function initializeCollaborativeListeningUI(player, authManager) {
     const audioElement = document.getElementById('audio-player');
     collabListeningInstance = new CollaborativeListeningUI(player, audioElement, null);
-    // Store in window for access from events.js
+    // Store in window for access from events.js and app.js
     window.collabListeningManager = collabListeningInstance.getManager();
+    window.collabListeningUI = collabListeningInstance;
     return collabListeningInstance;
 }
 

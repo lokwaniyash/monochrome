@@ -371,7 +371,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const lyricsManager = new LyricsManager(api);
 
     // Initialize collaborative listening feature
-    initializeCollaborativeListeningUI(player, authManager);
+    const collabUI = initializeCollaborativeListeningUI(player, authManager);
+
+    // Restore any active session from previous page load, but only after auth is ready
+    authManager.onAuthStateChanged((user) => {
+        if (user) {
+            collabUI.restoreActiveSession().catch((err) => {
+                console.warn('[CollabListening] Session restore failed:', err);
+            });
+        }
+    });
 
     // Check browser support for local files
     const selectLocalBtn = document.getElementById('select-local-folder-btn');
@@ -434,14 +443,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeUIInteractions(player, api, ui);
     initializeKeyboardShortcuts(player, audioPlayer);
 
-    // Collaborative listening button event listeners
+    // Collaborative listening button event listeners - delegate to UI class
     document.getElementById('collab-listening-start-btn')?.addEventListener('click', () => {
         if (!authManager.user) {
             alert('Please sign in to use collaborative listening');
             return;
         }
-        const startModal = document.getElementById('collab-listening-start-modal');
-        if (startModal) startModal.classList.add('active');
+        window.collabListeningUI?.openStartModal();
     });
 
     document.getElementById('collab-listening-join-btn')?.addEventListener('click', () => {
@@ -449,8 +457,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('Please sign in to use collaborative listening');
             return;
         }
-        const joinModal = document.getElementById('collab-listening-join-modal');
-        if (joinModal) joinModal.classList.add('active');
+        window.collabListeningUI?.openJoinModal();
     });
 
     // Restore UI state for the current track (like button, theme)
@@ -2400,7 +2407,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         authManager.onAuthStateChanged(async (user) => {
             // Update the dropdown whenever auth state changes
             await updateAccountDropdown();
-            
+
             if (user) {
                 const data = await syncManager.getUserData();
                 if (data && data.profile && data.profile.avatar_url) {
