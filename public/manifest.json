@@ -1,6 +1,6 @@
 {
-    "name": "Monochrome Music",
-    "short_name": "Monochrome",
+    "name": "Sameer Bajao",
+    "short_name": "Sameer Bajao",
     "description": "A minimalist music streaming application",
     "start_url": "./",
     "display": "standalone",
