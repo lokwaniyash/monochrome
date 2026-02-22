@@ -1106,7 +1106,7 @@ kbd {
 
     /* Standardized radius */
     position: fixed !important;
-    background: rgba(20,20,22,0.28);
+    background: rgba(20,20,22,0.73);
     border: 1px solid rgba(255,255,255,0.06);
     box-shadow: 0 8px 24px 0 rgba(0,0,0,0.35);
     backdrop-filter: blur(14px) saturate(140%);
@@ -1119,31 +1119,6 @@ kbd {
     transition: all var(--transition-normal) var(--ease-out-back);
     height: var(--player-bar-height-desktop);
     animation: slide-up var(--transition-slow) var(--ease-out-back);
-}
-
-/* Liquid overlay SVG placed inside the now-playing bar */
-.now-playing-bar .liquid-overlay {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    mix-blend-mode: normal;
-    opacity: 0.52;
-    z-index: 1;
-}
-
-/* Make sure content sits above the overlay */
-.now-playing-bar > *:not(.liquid-overlay) {
-    position: relative;
-    z-index: 2;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .now-playing-bar .liquid-overlay svg feTurbulence,
-    .now-playing-bar .liquid-overlay svg feDisplacementMap {
-        animation: none;
-    }
 }
 
 :root[data-theme='white'] .now-playing-bar {
@@ -3167,7 +3142,7 @@ input:checked + .slider::before {
     flex-shrink: 0;
 }
 
-#current-time {
+#total-duration {
     text-align: right;
 }
 
@@ -6030,8 +6005,8 @@ img[src=''] {
     }
 
     .volume-controls button svg {
-        width: 16px;
-        height: 16px;
+        width: 20px;
+        height: 20px;
     }
 
     .track-item {
