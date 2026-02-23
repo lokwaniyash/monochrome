@@ -23,7 +23,6 @@ import {
 } from './utils.js';
 import { openLyricsPanel } from './lyrics.js';
 import {
-    recentActivityManager,
     backgroundSettings,
     dynamicColorSettings,
     cardSettings,
@@ -32,6 +31,7 @@ import {
     fontSettings,
     contentBlockingSettings,
 } from './storage.js';
+import { recentActivityManager } from './recentActivityManager.js';
 import { db } from './db.js';
 import { getVibrantColorFromImage } from './vibrant-color.js';
 import { syncManager } from './accounts/pocketbase.js';
@@ -1542,9 +1542,9 @@ export class UIRenderer {
             if (refreshAlbumsBtn) refreshAlbumsBtn.onclick = () => this.renderHomeAlbums(true);
             if (refreshArtistsBtn) refreshArtistsBtn.onclick = () => this.renderHomeArtists(true);
             if (clearRecentBtn)
-                clearRecentBtn.onclick = () => {
+                clearRecentBtn.onclick = async () => {
                     if (confirm('Clear recent activity?')) {
-                        recentActivityManager.clear();
+                        await recentActivityManager.clear();
                         this.renderHomeRecent();
                     }
                 };
@@ -1881,7 +1881,7 @@ export class UIRenderer {
         }
     }
 
-    renderHomeRecent() {
+    async renderHomeRecent() {
         const recentContainer = document.getElementById('home-recent-mixed');
         const section = recentContainer?.closest('.content-section');
 
@@ -1893,7 +1893,7 @@ export class UIRenderer {
         if (section) section.style.display = '';
 
         if (recentContainer) {
-            const recents = recentActivityManager.getRecents();
+            const recents = await recentActivityManager.getRecents();
             const items = [];
 
             if (recents.albums) items.push(...recents.albums.slice(0, 4).map((i) => ({ ...i, _kind: 'album' })));
@@ -2282,7 +2282,7 @@ export class UIRenderer {
             });
             this.renderListWithTracks(tracklistContainer, tracks, false, true);
 
-            recentActivityManager.addAlbum(album);
+            await recentActivityManager.addAlbum(album);
 
             // Update header like button
             const albumLikeBtn = document.getElementById('like-album-btn');
@@ -2727,7 +2727,7 @@ export class UIRenderer {
                     }
                 }
 
-                recentActivityManager.addPlaylist({
+                await recentActivityManager.addPlaylist({
                     id: playlistData.id || playlistData.uuid,
                     name: playlistData.name || playlistData.title,
                     title: playlistData.title || playlistData.name,
@@ -2829,7 +2829,7 @@ export class UIRenderer {
                 // Render Actions (Shuffle + Sort + Share)
                 this.updatePlaylistHeaderActions(playlist, false, currentTracks, false, applySort, () => currentSort);
 
-                recentActivityManager.addPlaylist(playlist);
+                await recentActivityManager.addPlaylist(playlist);
                 document.title = playlist.title || 'Artist Mix';
             }
 
@@ -2969,7 +2969,7 @@ export class UIRenderer {
                 this.player.playTrackFromQueue();
             };
 
-            recentActivityManager.addMix(mix);
+            await recentActivityManager.addMix(mix);
 
             // Update header like button
             const mixLikeBtn = document.getElementById('like-mix-btn');
@@ -3380,7 +3380,7 @@ export class UIRenderer {
                 }
             }
 
-            recentActivityManager.addArtist(artist);
+            await recentActivityManager.addArtist(artist);
 
             document.title = artist.name;
         } catch (error) {
@@ -3956,6 +3956,8 @@ export class UIRenderer {
             // If you have a route state, check it here.
             if (this.currentPage() === 'library') {
                 await this.renderLibraryPage();
+            } else if (this.currentPage() === 'home') {
+                await this.renderHomeRecent();
             }
             await this.renderPinnedItems();
         };
