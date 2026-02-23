@@ -1220,7 +1220,8 @@ kbd {
     flex: 1 1 auto;
     margin-bottom: 0;
     padding-bottom: 0;
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 #pinned-items-list .nav-item a {

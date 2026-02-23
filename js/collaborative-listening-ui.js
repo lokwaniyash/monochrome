@@ -42,7 +42,9 @@ export class CollaborativeListeningUI {
     attachEventListeners() {
         // Create session
         this.createBtn?.addEventListener('click', () => this.handleCreateSession());
-        document.getElementById('collab-listening-cancel-start')?.addEventListener('click', () => this.closeStartModal());
+        document
+            .getElementById('collab-listening-cancel-start')
+            ?.addEventListener('click', () => this.closeStartModal());
 
         // Join session
         this.joinBtn?.addEventListener('click', () => this.handleJoinSession());
@@ -50,7 +52,9 @@ export class CollaborativeListeningUI {
 
         // Leave / Delete session
         this.leaveBtn?.addEventListener('click', () => this.handleLeaveSession());
-        document.getElementById('collab-delete-session-btn')?.addEventListener('click', () => this.handleDeleteSession());
+        document
+            .getElementById('collab-delete-session-btn')
+            ?.addEventListener('click', () => this.handleDeleteSession());
 
         // Close active modal (just hides it, stays in session)
         this.closeModalBtn?.addEventListener('click', () => this.closeActiveModal());
@@ -59,9 +63,15 @@ export class CollaborativeListeningUI {
         this.copyCodeBtn?.addEventListener('click', () => this.copySessionCode());
 
         // Close modals when clicking backdrop
-        this.startModal?.addEventListener('click', (e) => { if (e.target === this.startModal) this.closeStartModal(); });
-        this.joinModal?.addEventListener('click', (e) => { if (e.target === this.joinModal) this.closeJoinModal(); });
-        this.activeModal?.addEventListener('click', (e) => { if (e.target === this.activeModal) this.closeActiveModal(); });
+        this.startModal?.addEventListener('click', (e) => {
+            if (e.target === this.startModal) this.closeStartModal();
+        });
+        this.joinModal?.addEventListener('click', (e) => {
+            if (e.target === this.joinModal) this.closeJoinModal();
+        });
+        this.activeModal?.addEventListener('click', (e) => {
+            if (e.target === this.activeModal) this.closeActiveModal();
+        });
 
         // Listen for manager events
         this.manager.on('sessionCreated', (data) => this.onSessionCreated(data));
@@ -369,9 +379,9 @@ export class CollaborativeListeningUI {
 
         const btns = [collabBtn, fsCollabBtn].filter(Boolean);
         if (active) {
-            btns.forEach(btn => btn.classList.add('collab-active'));
+            btns.forEach((btn) => btn.classList.add('collab-active'));
         } else {
-            btns.forEach(btn => btn.classList.remove('collab-active'));
+            btns.forEach((btn) => btn.classList.remove('collab-active'));
         }
     }
 

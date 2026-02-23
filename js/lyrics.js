@@ -1130,7 +1130,7 @@ function setupSync(track, audioPlayer, amLyrics, lyricsManager) {
             }
 
             audioPlayer.currentTime = e.detail.timestamp / 1000;
-            audioPlayer.play().catch(e => console.warn('Lyrics seek play failed:', e));
+            audioPlayer.play().catch((e) => console.warn('Lyrics seek play failed:', e));
         }
     };
 

@@ -1320,6 +1320,11 @@ export class UIRenderer {
         }
     }
 
+    currentPage() {
+        const activePage = document.querySelector('.page.active');
+        return activePage ? activePage.id.replace('page-', '') : null;
+    }
+
     async renderLibraryPage() {
         this.showPage('library');
 
@@ -3946,7 +3951,10 @@ export class UIRenderer {
         const rerenderIfOnLibrary = async () => {
             // Optional: only rerender if library page is currently visible
             // If you have a route state, check it here.
-            await this.renderLibraryPage();
+            if (this.currentPage() === 'library') {
+                await this.renderLibraryPage();
+            }
+            await this.renderPinnedItems();
         };
 
         // Fires once when the initial cloud sync finishes

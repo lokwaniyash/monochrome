@@ -1,6 +1,11 @@
 //js/accounts/config.js
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import {
+    getAuth,
+    GoogleAuthProvider,
+    setPersistence,
+    browserLocalPersistence,
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { getDatabase } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 let app = null;
@@ -69,7 +74,7 @@ async function ensureConfigLoaded() {
 async function ensureAuthReady() {
     await ensureConfigLoaded();
     // Wait a tick for Firebase initialization to complete
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const checkAuth = () => {
             if (auth) {
                 resolve();
@@ -102,7 +107,7 @@ ensureConfigLoaded().then(() => {
             auth = getAuth(app);
             database = getDatabase(app);
             provider = new GoogleAuthProvider();
-            
+
             // Explicitly set persistence to LOCAL (survives browser restart)
             setPersistence(auth, browserLocalPersistence)
                 .then(() => {
@@ -111,7 +116,7 @@ ensureConfigLoaded().then(() => {
                 .catch((error) => {
                     console.error('[Config] Failed to set persistence:', error);
                 });
-            
+
             console.log('[Config] Firebase initialized');
         } catch (error) {
             console.error('Error initializing Firebase:', error);
@@ -313,4 +318,14 @@ export function initializeFirebaseSettingsUI() {
     }
 }
 
-export { app, auth, database, provider, getConfig, getPocketBaseUrl, loadConfigFromFile, ensureConfigLoaded, ensureAuthReady };
+export {
+    app,
+    auth,
+    database,
+    provider,
+    getConfig,
+    getPocketBaseUrl,
+    loadConfigFromFile,
+    ensureConfigLoaded,
+    ensureAuthReady,
+};

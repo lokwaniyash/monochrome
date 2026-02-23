@@ -148,7 +148,10 @@ export class CollaborativeListeningManager {
 
         try {
             const user = authManager.user;
-            const members = typeof this.currentSession.members === 'string' ? JSON.parse(this.currentSession.members) : this.currentSession.members;
+            const members =
+                typeof this.currentSession.members === 'string'
+                    ? JSON.parse(this.currentSession.members)
+                    : this.currentSession.members;
             const updatedMembers = members.filter((m) => m.id !== user.uid);
 
             if (updatedMembers.length === 0) {
@@ -218,12 +221,17 @@ export class CollaborativeListeningManager {
         try {
             // Update current track - use setQueue + playAtIndex since playTrack doesn't exist
             if (session.current_track) {
-                const track = typeof session.current_track === 'string' ? JSON.parse(session.current_track) : session.current_track;
+                const track =
+                    typeof session.current_track === 'string'
+                        ? JSON.parse(session.current_track)
+                        : session.current_track;
                 const isSameTrack = this.player.currentTrack && this.player.currentTrack.id === track.id;
                 if (!isSameTrack) {
                     // Build the queue: synced track first, then the rest of the session queue if available
                     const sessionQueue = session.queue
-                        ? (typeof session.queue === 'string' ? JSON.parse(session.queue) : session.queue)
+                        ? typeof session.queue === 'string'
+                            ? JSON.parse(session.queue)
+                            : session.queue
                         : null;
 
                     if (sessionQueue && Array.isArray(sessionQueue) && sessionQueue.length > 0) {
@@ -284,7 +292,10 @@ export class CollaborativeListeningManager {
                 .subscribe(this.currentSession.id, (data) => {
                     if (data.action === 'update') {
                         this.currentSession = data.record;
-                        this.sessionMembers = typeof data.record.members === 'string' ? JSON.parse(data.record.members) : data.record.members;
+                        this.sessionMembers =
+                            typeof data.record.members === 'string'
+                                ? JSON.parse(data.record.members)
+                                : data.record.members;
                         this.emit('membersUpdated', { members: this.sessionMembers });
 
                         if (!this.isSessionHost) {
@@ -336,7 +347,9 @@ export class CollaborativeListeningManager {
             isHost: this.isSessionHost,
             members: this.sessionMembers,
             currentTrack: this.currentSession.current_track
-                ? (typeof this.currentSession.current_track === 'string' ? JSON.parse(this.currentSession.current_track) : this.currentSession.current_track)
+                ? typeof this.currentSession.current_track === 'string'
+                    ? JSON.parse(this.currentSession.current_track)
+                    : this.currentSession.current_track
                 : null,
             isPlaying: this.currentSession.is_playing,
             createdAt: new Date(this.currentSession.created_at),
@@ -347,10 +360,13 @@ export class CollaborativeListeningManager {
 
     saveSessionState() {
         if (this.currentSession) {
-            sessionStorage.setItem('collaborative_session', JSON.stringify({
-                sessionId: this.currentSession.id,
-                sessionCode: this.sessionCode,
-            }));
+            sessionStorage.setItem(
+                'collaborative_session',
+                JSON.stringify({
+                    sessionId: this.currentSession.id,
+                    sessionCode: this.sessionCode,
+                })
+            );
         }
     }
 

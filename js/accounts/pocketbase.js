@@ -9,18 +9,20 @@ const DEFAULT_POCKETBASE_URL = 'https://monodb.samidy.com';
 
 // Wait for config to load, then create PocketBase with correct URL
 let pb;
-const pbReadyPromise = ensureConfigLoaded().then(() => {
-    const url = getPocketBaseUrl();
-    pb = new PocketBase(url);
-    pb.autoCancellation(false);
-    console.log('[PocketBase] Initialized with URL:', url);
-    return pb;
-}).catch(err => {
-    console.log('[PocketBase] Config load error, using default URL');
-    pb = new PocketBase(DEFAULT_POCKETBASE_URL);
-    pb.autoCancellation(false);
-    return pb;
-});
+const pbReadyPromise = ensureConfigLoaded()
+    .then(() => {
+        const url = getPocketBaseUrl();
+        pb = new PocketBase(url);
+        pb.autoCancellation(false);
+        console.log('[PocketBase] Initialized with URL:', url);
+        return pb;
+    })
+    .catch((err) => {
+        console.log('[PocketBase] Config load error, using default URL');
+        pb = new PocketBase(DEFAULT_POCKETBASE_URL);
+        pb.autoCancellation(false);
+        return pb;
+    });
 
 const syncManager = {
     pb: pb,
@@ -84,6 +86,7 @@ const syncManager = {
         const userPlaylists = this.safeParseInternal(record.user_playlists, 'user_playlists', {});
         const userFolders = this.safeParseInternal(record.user_folders, 'user_folders', {});
         const favoriteAlbums = this.safeParseInternal(record.favorite_albums, 'favorite_albums', []);
+        const pinneditems = this.safeParseInternal(record.pinneditems, 'pinneditems', {});
 
         const profile = {
             username: record.username,
@@ -98,7 +101,7 @@ const syncManager = {
             favorite_albums: favoriteAlbums,
         };
 
-        return { library, history, userPlaylists, userFolders, profile };
+        return { library, history, userPlaylists, userFolders, profile, pinneditems };
     },
 
     async _updateUserJSON(uid, field, data) {
@@ -543,7 +546,7 @@ const syncManager = {
                 await this._ensurePbReady();
                 const cloudData = await this.getUserData();
 
-                window.dispatchEvent(new CustomEvent("cloud-ready"));
+                window.dispatchEvent(new CustomEvent('cloud-ready'));
 
                 if (cloudData) {
                     let database = db;
@@ -670,6 +673,83 @@ const syncManager = {
             this._userRecordCache = null;
             this._isSyncing = false;
         }
+    },
+
+    async performTransaction(storeName, mode, callback) {
+        const user = authManager.user;
+        if (!user) throw new Error('Not signed in');
+
+        const isWrite = mode === 'readwrite';
+        const pb = await this._ensurePbReady();
+        const record = await this._getUserRecord(user.uid);
+        if (!record) throw new Error('User record missing');
+
+        // Decide what field we are editing
+        const isLibrarySubstore = ['tracks', 'albums', 'artists', 'playlists'].includes(storeName);
+
+        let field;
+        let container; // full parsed object for the field
+        let value; // the specific object/array passed to the callback
+
+        if (isLibrarySubstore) {
+            field = 'library';
+            container = this.safeParseInternal(record.library, 'library', {});
+            if (!container[storeName] || typeof container[storeName] !== 'object') container[storeName] = {};
+            value = container[storeName];
+        } else if (storeName === 'history') {
+            field = 'history';
+            container = this.safeParseInternal(record.history, 'history', []);
+            value = container;
+        } else if (storeName === 'settings') {
+            field = 'settings';
+            container = this.safeParseInternal(record.settings, 'settings', {});
+            value = container;
+        } else if (storeName === 'user_playlists') {
+            field = 'user_playlists';
+            container = this.safeParseInternal(record.user_playlists, 'user_playlists', {});
+            value = container;
+        } else {
+            throw new Error(`Unknown store: ${storeName}`);
+        }
+
+        // Fake "store" with only what your code uses (clear + optional get/put/delete)
+        const store = {
+            clear: () => {
+                if (!isWrite) throw new Error('Readonly transaction');
+                if (Array.isArray(value)) value.length = 0;
+                else {
+                    for (const k of Object.keys(value)) delete value[k];
+                }
+            },
+            getAll: () => (Array.isArray(value) ? value.slice() : Object.values(value)),
+            get: (key) => value?.[key],
+            put: (entry, key) => {
+                if (!isWrite) throw new Error('Readonly transaction');
+                const k = key ?? entry?.id ?? entry?.uuid;
+                if (!k) throw new Error('put needs key or entry.id/uuid');
+                value[k] = entry;
+                return entry;
+            },
+            delete: (key) => {
+                if (!isWrite) throw new Error('Readonly transaction');
+                delete value[key];
+            },
+        };
+
+        const result = await callback(store);
+
+        if (isWrite) {
+            // write back: if library substore, we updated container[storeName]
+            const payload =
+                field === 'library' ? { library: JSON.stringify(container) } : { [field]: JSON.stringify(container) };
+
+            await pb.collection('DB_users').update(record.id, payload, { f_id: user.uid });
+
+            // refresh cache minimally
+            this._userRecordCache = { ...record, ...payload };
+        }
+
+        return result;
     },
 };
 
