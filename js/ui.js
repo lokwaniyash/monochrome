@@ -173,6 +173,7 @@ export class UIRenderer {
 
     async renderPinnedItems() {
         const nav = document.getElementById('pinned-items-nav');
+        const header = document.getElementById('pinned-items-header');
         const list = document.getElementById('pinned-items-list');
         if (!nav || !list) return;
 
@@ -180,10 +181,12 @@ export class UIRenderer {
 
         if (pinnedItems.length === 0) {
             nav.style.display = 'none';
+            header.style.display = 'none';
             return;
         }
 
         nav.style.display = '';
+        header.style.display = '';
         list.innerHTML = pinnedItems
             .map((item) => {
                 let iconHTML;
