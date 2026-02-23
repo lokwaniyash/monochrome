@@ -1138,7 +1138,7 @@ export class UIRenderer {
             if (isFsSeeking) {
                 if (!isNaN(audioPlayer.duration)) {
                     audioPlayer.currentTime = lastFsSeekPosition * audioPlayer.duration;
-                    if (wasFsPlaying) audioPlayer.play().catch(e => console.warn('FS seek play failed:', e));
+                    if (wasFsPlaying) audioPlayer.play().catch((e) => console.warn('FS seek play failed:', e));
                 }
                 isFsSeeking = false;
             }
@@ -1148,7 +1148,7 @@ export class UIRenderer {
             if (isFsSeeking) {
                 if (!isNaN(audioPlayer.duration)) {
                     audioPlayer.currentTime = lastFsSeekPosition * audioPlayer.duration;
-                    if (wasFsPlaying) audioPlayer.play().catch(e => console.warn('FS seek play failed:', e));
+                    if (wasFsPlaying) audioPlayer.play().catch((e) => console.warn('FS seek play failed:', e));
                 }
                 isFsSeeking = false;
             }
@@ -2240,10 +2240,10 @@ export class UIRenderer {
                     dateDisplay =
                         window.innerWidth > 768
                             ? releaseDate.toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                            })
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                              })
                             : year;
                 }
             }
@@ -3232,9 +3232,9 @@ export class UIRenderer {
                 <span>${artist.popularity}% popularity</span>
                 <div class="artist-tags">
                     ${(artist.artistRoles || [])
-                    .filter((role) => role.category)
-                    .map((role) => `<span class="artist-tag">${role.category}</span>`)
-                    .join('')}
+                        .filter((role) => role.category)
+                        .map((role) => `<span class="artist-tag">${role.category}</span>`)
+                        .join('')}
                 </div>
             `;
 
@@ -3937,5 +3937,24 @@ export class UIRenderer {
             titleEl.textContent = 'Track not found';
             artistEl.innerHTML = '';
         }
+    }
+
+    bindCloudListeners() {
+        if (this._cloudListenersBound) return;
+        this._cloudListenersBound = true;
+
+        const rerenderIfOnLibrary = async () => {
+            // Optional: only rerender if library page is currently visible
+            // If you have a route state, check it here.
+            await this.renderLibraryPage();
+        };
+
+        // Fires once when the initial cloud sync finishes
+        window.addEventListener('cloud-ready', rerenderIfOnLibrary);
+
+        // Fires on subsequent changes (you already dispatch these in your sync code)
+        window.addEventListener('library-changed', rerenderIfOnLibrary);
+        window.addEventListener('history-changed', rerenderIfOnLibrary);
+        window.addEventListener('sync-playlist-change', rerenderIfOnLibrary);
     }
 }

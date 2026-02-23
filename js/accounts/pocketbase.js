@@ -540,7 +540,10 @@ const syncManager = {
             this._isSyncing = true;
 
             try {
+                await this._ensurePbReady();
                 const cloudData = await this.getUserData();
+
+                window.dispatchEvent(new CustomEvent("cloud-ready"));
 
                 if (cloudData) {
                     let database = db;
@@ -670,8 +673,6 @@ const syncManager = {
     },
 };
 
-if (pb) {
-    authManager.onAuthStateChanged(syncManager.onAuthStateChanged.bind(syncManager));
-}
+authManager.onAuthStateChanged(syncManager.onAuthStateChanged.bind(syncManager));
 
-export { pb, syncManager };
+export { pb, syncManager, authManager };

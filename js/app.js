@@ -367,6 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeCasting(audioPlayer, castBtn);
 
     const ui = new UIRenderer(api, player);
+    ui.bindCloudListeners();
     const scrobbler = new MultiScrobbler();
     const lyricsManager = new LyricsManager(api);
 

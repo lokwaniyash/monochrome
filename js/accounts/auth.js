@@ -39,10 +39,18 @@ export class AuthManager {
 
     onAuthStateChanged(callback) {
         this.authListeners.push(callback);
-        // If we already have a user state, trigger immediately
-        if (this.user !== null) {
-            callback(this.user);
-        }
+
+        let active = true;
+
+        this.initPromise.then(() => {
+            if (!active) return;
+            if (this.user !== null) callback(this.user);
+        });
+
+        return () => {
+            active = false;
+            this.authListeners = this.authListeners.filter((x) => x !== callback);
+        };
     }
 
     async signInWithGoogle() {
